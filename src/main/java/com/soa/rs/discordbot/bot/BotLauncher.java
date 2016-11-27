@@ -1,5 +1,8 @@
 package com.soa.rs.discordbot.bot;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.soa.rs.discordbot.cfg.ConfigWriter;
 import com.soa.rs.discordbot.cfg.DiscordCfg;
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
@@ -9,8 +12,10 @@ public class BotLauncher {
 	private static String token;
 	private static String eventURL;
 	private static SoaDiscordBot bot;
+	private static final Logger logger = LogManager.getLogger();
 
 	public static void main(String[] args) {
+		logger.info("*********STARTING*********");
 		parseArgs(args);
 		bot = new SoaDiscordBot();
 		Runtime.getRuntime().addShutdownHook(new DisconnectBot());
@@ -68,7 +73,7 @@ public class BotLauncher {
 
 	static class DisconnectBot extends Thread {
 		public void run() {
-			System.out.println("Disconnecting Bot");
+			logger.info("Disconnecting Bot");
 			bot.disconnect();
 		}
 	}

@@ -9,6 +9,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.TimeZone;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
@@ -18,14 +21,14 @@ import com.rometools.rome.io.XmlReader;
 public class RssParser {
 	private URL url;
 	private SyndFeedInput input;
+	private static final Logger logger = LogManager.getLogger();
 
 	public RssParser(String string) {
 		try {
 			url = new URL(string);
 			input = new SyndFeedInput();
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error setting URL", e);
 		}
 	}
 
@@ -33,8 +36,7 @@ public class RssParser {
 		try {
 			url = new URL(string);
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error setting URL", e);
 		}
 	}
 
@@ -63,20 +65,19 @@ public class RssParser {
 				{
 					sb.append("The following event is ongoing!\n");
 					sb.append(entry.getTitle());
-					sb.append("\nFor details, visit: " + entry.getLink());
+					sb.append("\nFor details, visit: <" + entry.getLink() + ">");
 					sb.append("\n");
 				} else if (DateCheck.isSameDay(cal1, cal2))// today's events
 				{
 					sb.append("\nEvent Title: " + entry.getTitle());
 					sb.append("\nEvent Date: " + sdf.format(entry.getPublishedDate()));
-					sb.append("\nFor details, visit: " + entry.getLink());
+					sb.append("\nFor details, visit: <" + entry.getLink() + ">");
 					sb.append("\n");
 				}
 			}
 			return sb.toString();
 		} catch (IllegalArgumentException | FeedException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error generating event list", e);
 		}
 
 		return null;
