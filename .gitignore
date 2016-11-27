@@ -1,0 +1,8 @@
+*.class
+*.jar
+**/target/**
+**/.classpath
+**/.project
+**/.settings/**
+**/jaxb/**
+**/META-INF/**
