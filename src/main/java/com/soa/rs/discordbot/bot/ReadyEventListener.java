@@ -75,10 +75,10 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 				logger.error("Error listing events to Discord channels", e);
 			}
 
-			// Schedule to run at midnight UTC next day (game reset)
+			// Schedule to run at 12:01 UTC next day (game reset)
 			Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 			cal.set(Calendar.HOUR_OF_DAY, 0);
-			cal.set(Calendar.MINUTE, 0);
+			cal.set(Calendar.MINUTE, 1);
 			cal.set(Calendar.SECOND, 0);
 			cal.add(Calendar.DATE, 1);
 

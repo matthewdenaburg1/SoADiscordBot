@@ -1,6 +1,7 @@
 package com.soa.rs.discordbot.util;
 
 import java.util.Calendar;
+import java.util.Date;
 
 public class DateCheck {
 
@@ -25,6 +26,10 @@ public class DateCheck {
 		}
 		return (cal1.get(Calendar.ERA) == cal2.get(Calendar.ERA) && cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR)
 				&& cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR));
+	}
+
+	public static int daysBetween(Date d1, Date d2) {
+		return (int) ((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
 	}
 
 }

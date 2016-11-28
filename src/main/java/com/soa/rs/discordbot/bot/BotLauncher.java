@@ -15,8 +15,8 @@ public class BotLauncher {
 	private static final Logger logger = LogManager.getLogger();
 
 	public static void main(String[] args) {
-		logger.info("*********STARTING*********");
 		parseArgs(args);
+		logger.info("*********STARTING*********");
 		bot = new SoaDiscordBot();
 		Runtime.getRuntime().addShutdownHook(new DisconnectBot());
 		bot.start(token, eventURL);
