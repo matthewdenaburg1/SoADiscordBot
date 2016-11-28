@@ -60,20 +60,9 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 		@Override
 		public void run() {
 			logger.info("EventLister task started");
-			RssParser parser = new RssParser(eventURL);
-			String events = parser.parseEventFeed();
 
-			// Grab channels named "events" and put message in each one
-			try {
-				List<IChannel> channels = client.getChannels();
-				for (IChannel channel : channels) {
-					if (channel.getName().equals("events")) {
-						new MessageBuilder(client).withChannel(channel).withContent(events).build();
-					}
-				}
-			} catch (RateLimitException | DiscordException | MissingPermissionsException e) {
-				logger.error("Error listing events to Discord channels", e);
-			}
+			SoaEventListerTask listerTask = new SoaEventListerTask(eventURL);
+			listerTask.execTask(client, true);
 
 			// Schedule to run at 12:01 UTC next day (game reset)
 			Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
