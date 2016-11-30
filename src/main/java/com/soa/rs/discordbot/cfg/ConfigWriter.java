@@ -8,23 +8,31 @@ import javax.xml.bind.Marshaller;
 
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
 
+/**
+ * The ConfigWriter writes the initial configuration provided via the command
+ * line to an XML configuration file, for use in quick initial startup of the
+ * bot.
+ */
 public class ConfigWriter {
 
-	public void writeConfig(DiscordConfiguration cfg, String filename) {
-		try {
+	/**
+	 * 
+	 * @param cfg
+	 *            The created DiscordConfiguration object to be marshalled to
+	 *            XML
+	 * @param filename
+	 *            The path to where the XML file will be stored
+	 * @throws JAXBException
+	 */
+	public void writeConfig(DiscordConfiguration cfg, String filename) throws JAXBException {
+		File file = new File(filename);
+		JAXBContext jaxbContext = JAXBContext.newInstance(DiscordConfiguration.class);
+		Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
-			File file = new File(filename);
-			JAXBContext jaxbContext = JAXBContext.newInstance(DiscordConfiguration.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+		// output pretty printed
+		jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-			// output pretty printed
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-			jaxbMarshaller.marshal(cfg, file);
-
-		} catch (JAXBException e) {
-			e.printStackTrace();
-		}
+		jaxbMarshaller.marshal(cfg, file);
 
 	}
 }

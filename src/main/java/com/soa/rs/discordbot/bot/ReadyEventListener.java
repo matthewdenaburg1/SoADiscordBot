@@ -1,43 +1,46 @@
 package com.soa.rs.discordbot.bot;
 
-import java.util.Calendar;
-import java.util.List;
-import java.util.TimeZone;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.soa.rs.discordbot.util.RssParser;
+import com.soa.rs.discordbot.bot.events.SoaEventListerScheduler;
+import com.soa.rs.discordbot.cfg.DiscordCfg;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
-import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.Image;
-import sx.blah.discord.util.MessageBuilder;
-import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RateLimitException;
 
+/**
+ * The Ready Event Listener handles the configuration of bot settings along with
+ * starting any automated tasks which will run periodically during the bot's
+ * runtime. The <tt>ReadyEvent</tt> is triggered upon the bot being ready to
+ * interact with the Discord API.
+ */
 public class ReadyEventListener implements IListener<ReadyEvent> {
 
-	private String eventURL = null;
-	private Timer timer;
 	private IDiscordClient client;
 	private static final Logger logger = LogManager.getLogger();
 
+	/**
+	 * Handles the ReadyEvent sent by the Discord API, this sets up the bot's
+	 * user settings and schedules appropriate automated tasks.
+	 */
 	@Override
 	public void handle(ReadyEvent event) {
 
 		client = event.getClient();
 		setDiscordUserSettings();
-		timer = new Timer();
-		timer.schedule(new SoaEventLister(), 2);
-
+		SoaEventListerScheduler listScheduler = new SoaEventListerScheduler(client,
+				DiscordCfg.getInstance().getEventCalendarUrl());
+		listScheduler.scheduleTask();
 	}
 
+	/**
+	 * Sets up the bot's user settings
+	 */
 	private void setDiscordUserSettings() {
 
 		try {
@@ -49,35 +52,6 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 		} catch (DiscordException | RateLimitException e) {
 			logger.error("Error updating username or avatar", e);
 		}
-	}
-
-	public void setUrl(String url) {
-		this.eventURL = url;
-	}
-
-	class SoaEventLister extends TimerTask {
-
-		@Override
-		public void run() {
-			logger.info("EventLister task started");
-
-			SoaEventListerTask listerTask = new SoaEventListerTask(eventURL);
-			listerTask.execTask(client, true);
-
-			// Schedule to run at 12:01 UTC next day (game reset)
-			Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-			cal.set(Calendar.HOUR_OF_DAY, 0);
-			cal.set(Calendar.MINUTE, 1);
-			cal.set(Calendar.SECOND, 0);
-			cal.add(Calendar.DATE, 1);
-
-			timer.cancel();
-			timer = new Timer();
-			timer.schedule(new SoaEventLister(), cal.getTime());
-			logger.info("EventLister task finished, next runtime: " + cal.getTime().toString());
-
-		}
-
 	}
 
 }
