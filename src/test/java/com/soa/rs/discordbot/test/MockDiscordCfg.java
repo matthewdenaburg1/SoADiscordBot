@@ -1,44 +1,26 @@
-package com.soa.rs.discordbot.cfg;
+package com.soa.rs.discordbot.test;
 
 import javax.xml.bind.JAXBException;
 
+import com.soa.rs.discordbot.cfg.ConfigReader;
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
 
 /**
- * The <tt>DiscordCfg</tt> singleton class is used for storing any configuration
- * which will be accessed by other parts of the bot. Configuration can be stored
- * within this class for easy access from other classes as needed.
+ * This class is a clone of {@link com.soa.rs.discordbot.cfg.DiscordCfg} without
+ * including the singleton elements, for the purposes of JUnit testing.
  */
-public class DiscordCfg {
-
+public class MockDiscordCfg {
 	/**
 	 * The event calendar feed from the SoA forums.
 	 */
-	private static String eventForumUrl = null;
+	private String eventForumUrl = null;
 
 	/**
 	 * The Discord Login token used to log in the bot.
 	 */
-	private static String token = null;
+	private String token = null;
 
-	protected DiscordCfg() {
-	}
-
-	/**
-	 * Singleton instantiator of the configuration. This setup is noted by
-	 * online documentation of being thread safe.
-	 */
-	private static class DiscordConfigSingleton {
-		private static final DiscordCfg INSTANCE = new DiscordCfg();
-	}
-
-	/**
-	 * Returns the singleton instance of the configuration
-	 * 
-	 * @return Configuration instance
-	 */
-	public static DiscordCfg getInstance() {
-		return DiscordConfigSingleton.INSTANCE;
+	public MockDiscordCfg() {
 	}
 
 	/**
@@ -97,7 +79,7 @@ public class DiscordCfg {
 	/**
 	 * Set the Discord login token
 	 * 
-	 * @param loginToken
+	 * @param token
 	 *            the Discord login token
 	 */
 	public void setToken(String loginToken) {
