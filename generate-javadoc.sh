@@ -7,7 +7,7 @@ mvn javadoc:javadoc
 mv -v target/site/apidocs/* ../tmp_javadoc/.
 git stash
 git checkout gh-pages
-find . | grep -v ".git*" | xargs rm -rf
+find . | grep -v ".git*" | grep -v ".project"| grep -v ".settings*" | grep -v ".classpath" | xargs rm -rf
 mv -v ../tmp_javadoc/* .
 git add .
 git commit -a -m "Add javadoc $VERSION"
