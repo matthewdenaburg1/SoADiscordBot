@@ -2,4 +2,5 @@
 <discordConfiguration>
     <discordToken>DToken6</discordToken>
     <eventUrl>http://forums.soa-rs.com/</eventUrl>
+    <newsUrl>http://forums.soa-rs.com/news</newsUrl>
 </discordConfiguration>

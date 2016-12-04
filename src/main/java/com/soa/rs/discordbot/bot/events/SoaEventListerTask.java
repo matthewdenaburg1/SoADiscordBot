@@ -114,7 +114,7 @@ public class SoaEventListerTask extends TimerTask {
 	public void run() {
 		logger.info("Executing SoaEventListerTask, scheduled = " + isScheduled());
 		SoaEventListParser parser = new SoaEventListParser(this.url);
-		String events = parser.parseEventFeed();
+		String events = parser.parse();
 
 		// Grab channels named "events" and put message in each one
 		if (events != null) {

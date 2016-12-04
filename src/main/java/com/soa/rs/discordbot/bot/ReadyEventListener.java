@@ -4,7 +4,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.soa.rs.discordbot.bot.events.SoaEventListerScheduler;
+import com.soa.rs.discordbot.bot.events.SoaNewsListerScheduler;
+import com.soa.rs.discordbot.bot.events.SoaTaskScheduler;
 import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.IListener;
@@ -33,9 +36,14 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 
 		client = event.getClient();
 		setDiscordUserSettings();
-		SoaEventListerScheduler listScheduler = new SoaEventListerScheduler(client,
+		SoaTaskScheduler listScheduler = new SoaEventListerScheduler(client,
 				DiscordCfg.getInstance().getEventCalendarUrl());
 		listScheduler.scheduleTask();
+		// TODO uncomment below block when newsfeed is ready
+		// SoaTaskScheduler newsScheduler = new
+		// SoaNewsListerScheduler(client,
+		// DiscordCfg.getInstance().getNewsUrl());
+		// newsScheduler.scheduleTask();
 	}
 
 	/**
@@ -45,9 +53,9 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 
 		try {
 			logger.info("Setting bot avatar");
-			client.changeAvatar(Image.forUrl("png", "http://soa-rs.com/img/greenlogo.png"));
-			logger.info("Setting bot username to 'SoA'");
-			client.changeUsername("SoA");
+			client.changeAvatar(Image.forUrl("png", SoaDiscordBotConstants.AVATAR_URL));
+			logger.info("Setting bot username to '" + SoaDiscordBotConstants.BOT_USERNAME + "'");
+			client.changeUsername(SoaDiscordBotConstants.BOT_USERNAME);
 
 		} catch (DiscordException | RateLimitException e) {
 			logger.error("Error updating username or avatar", e);

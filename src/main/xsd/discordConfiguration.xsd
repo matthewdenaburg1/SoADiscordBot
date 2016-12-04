@@ -5,6 +5,7 @@
                      <xs:sequence>
                            <xs:element name="discordToken" type="xs:string"></xs:element>
                            <xs:element name="eventUrl" type="xs:string"></xs:element>
+                           <xs:element name="newsUrl" type="xs:string"></xs:element>
                      </xs:sequence>
                </xs:complexType>
          </xs:element>

@@ -15,14 +15,15 @@ public class ConfigReaderTest {
 		ConfigReader reader = new ConfigReader();
 		DiscordConfiguration cfg = null;
 		try {
-			cfg = reader.loadAppConfig(this.getClass().getResource("/config-dev.xml").getPath());
+			cfg = reader.loadAppConfig(this.getClass().getResource("/config-test.xml").getPath());
 		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		Assert.assertEquals(cfg.getDiscordToken(), "DToken6");
 		Assert.assertEquals(cfg.getEventUrl(), "http://forums.soa-rs.com/");
+		Assert.assertEquals(cfg.getNewsUrl(), "http://forums.soa-rs.com/news");
 	}
 
 }

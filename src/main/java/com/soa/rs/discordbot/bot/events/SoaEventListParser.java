@@ -1,8 +1,6 @@
 package com.soa.rs.discordbot.bot.events;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -15,8 +13,6 @@ import org.apache.logging.log4j.Logger;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
-import com.rometools.rome.io.SyndFeedInput;
-import com.rometools.rome.io.XmlReader;
 import com.soa.rs.discordbot.util.DateAnalyzer;
 
 /**
@@ -25,50 +21,18 @@ import com.soa.rs.discordbot.util.DateAnalyzer;
  * events. It will also present the currently running weekly skill competition
  * if one is noted in the feed and any currently ongoing events.
  */
-public class SoaEventListParser {
-	private URL url;
-	private SyndFeedInput input;
+public class SoaEventListParser extends SoaDefaultRssParser {
+
 	private static final Logger logger = LogManager.getLogger();
 
 	/**
-	 * Constructor which also sets the feed URL.
+	 * Constructor which also sets the feed URL
 	 * 
 	 * @param string
-	 *            the event calendar feed URL
+	 *            the RSS feed URL
 	 */
 	public SoaEventListParser(String string) {
-		try {
-			url = new URL(string);
-			input = new SyndFeedInput();
-		} catch (MalformedURLException e) {
-			logger.error("Error setting URL", e);
-		}
-	}
-
-	/**
-	 * Sets the event calendar feed URL
-	 * 
-	 * @param string
-	 *            the event calendar feed URL
-	 */
-	public void setUrl(String string) {
-		try {
-			url = new URL(string);
-		} catch (MalformedURLException e) {
-			logger.error("Error setting URL", e);
-		}
-	}
-
-	/**
-	 * Get the RSS feed from the forums
-	 * 
-	 * @return the RSS feed object
-	 * @throws IllegalArgumentException
-	 * @throws FeedException
-	 * @throws IOException
-	 */
-	private SyndFeed getFeed() throws IllegalArgumentException, FeedException, IOException {
-		return input.build(new XmlReader(url));
+		super(string);
 	}
 
 	/**
@@ -97,7 +61,8 @@ public class SoaEventListParser {
 	 * 
 	 * @return String containing the event listings for that day.
 	 */
-	public String parseEventFeed() {
+	@Override
+	public String parse() {
 		try {
 			SyndFeed feed = getFeed();
 			SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy HH:mm");
@@ -149,4 +114,5 @@ public class SoaEventListParser {
 
 		return null;
 	}
+
 }

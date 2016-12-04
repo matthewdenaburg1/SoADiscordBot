@@ -1,15 +1,24 @@
 package com.soa.rs.discordbot.cfg;
 
+import java.util.Date;
+
 import javax.xml.bind.JAXBException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
+import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 
 /**
  * The <tt>DiscordCfg</tt> singleton class is used for storing any configuration
  * which will be accessed by other parts of the bot. Configuration can be stored
  * within this class for easy access from other classes as needed.
  */
+
 public class DiscordCfg {
+
+	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * The event calendar feed from the SoA forums.
@@ -20,6 +29,16 @@ public class DiscordCfg {
 	 * The Discord Login token used to log in the bot.
 	 */
 	private static String token = null;
+
+	/**
+	 * The date the last time that news was posted.
+	 */
+	private static Date newsLastPost = null;
+
+	/**
+	 * The RSS feed URL for SoA News
+	 */
+	private static String newsUrl = null;
 
 	protected DiscordCfg() {
 	}
@@ -64,6 +83,7 @@ public class DiscordCfg {
 	public void loadFromDiscordConfiguration(DiscordConfiguration cfg) {
 		eventForumUrl = cfg.getEventUrl();
 		token = cfg.getDiscordToken();
+		newsUrl = cfg.getNewsUrl();
 	}
 
 	/**
@@ -105,13 +125,59 @@ public class DiscordCfg {
 	}
 
 	/**
+	 * Get the last time news was posted
+	 * 
+	 * @return Date of last time news was posted.
+	 */
+	public Date getNewsLastPost() {
+		return newsLastPost;
+	}
+
+	/**
+	 * Set the last time news was posted
+	 * 
+	 * @param newsFeedLastPost
+	 *            the last time news was posted.
+	 */
+	public void setNewsLastPost(Date newsFeedLastPost) {
+		newsLastPost = newsFeedLastPost;
+	}
+
+	/**
+	 * Get the news feed URL
+	 * 
+	 * @return the news feed URL
+	 */
+	public String getNewsUrl() {
+		return newsUrl;
+	}
+
+	/**
+	 * Set the news feed URL
+	 * 
+	 * @param newsFeedUrl
+	 *            the news feed URL
+	 */
+	public void setNewsUrl(String newsFeedUrl) {
+		newsUrl = newsFeedUrl;
+	}
+
+	/**
 	 * Verify the necessary configuration items needed to start the bot are
 	 * present.
 	 * 
 	 * @return true if all parameters are present, false if otherwise.
 	 */
 	public boolean checkNecessaryConfiguration() {
-		if (eventForumUrl != null && token != null) {
+		if (eventForumUrl == null) {
+			logger.warn("Event calendar URL was null, setting to default");
+			setEventCalendarUrl(SoaDiscordBotConstants.EVENT_CALENDAR_URL);
+		}
+		if (newsUrl == null) {
+			logger.warn("News feed URL was null, setting to default");
+			setNewsUrl(SoaDiscordBotConstants.NEWS_FEED_URL);
+		}
+		if (eventForumUrl != null && newsUrl != null && token != null) {
 			return true;
 		}
 		return false;
@@ -128,6 +194,9 @@ public class DiscordCfg {
 		StringBuilder sb = new StringBuilder();
 		if (eventForumUrl == null) {
 			sb.append(" - Event Forum Url was missing");
+		}
+		if (newsUrl == null) {
+			sb.append(" - News feed Url was missing");
 		}
 		if (token == null) {
 			sb.append(" - Discord Login token was missing");

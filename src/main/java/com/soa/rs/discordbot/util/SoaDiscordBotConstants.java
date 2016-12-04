@@ -1,0 +1,28 @@
+package com.soa.rs.discordbot.util;
+
+/**
+ * Contains some default values
+ */
+public class SoaDiscordBotConstants {
+
+	/**
+	 * Default event calendar feed URL
+	 */
+	public static final String EVENT_CALENDAR_URL = "http://forums.soa-rs.com/calendar/events.xml";
+
+	/**
+	 * Default news feed URL
+	 */
+	// TODO Add default feed here
+	public static final String NEWS_FEED_URL = "";
+	
+	/**
+	 * Default username for the bot
+	 */
+	public static final String BOT_USERNAME = "SoA";
+	
+	/**
+	 * Default avatar for the bot
+	 */
+	public static final String AVATAR_URL = "http://soa-rs.com/img/greenlogo.png";
+}

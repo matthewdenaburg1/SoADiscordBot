@@ -1,5 +1,7 @@
 package com.soa.rs.discordbot.test;
 
+import java.util.Date;
+
 import javax.xml.bind.JAXBException;
 
 import org.junit.Assert;
@@ -17,6 +19,7 @@ public class DiscordCfgTest {
 		cfg = new DiscordConfiguration();
 		cfg.setDiscordToken("DToken1");
 		cfg.setEventUrl("http://1.google.com");
+		cfg.setNewsUrl("http://2.google.com");
 	}
 
 	@Test
@@ -27,33 +30,27 @@ public class DiscordCfgTest {
 
 		Assert.assertEquals(cfg.getDiscordToken(), mockDiscordCfg.getToken());
 		Assert.assertEquals(cfg.getEventUrl(), mockDiscordCfg.getEventCalendarUrl());
+		Assert.assertEquals(cfg.getNewsUrl(), mockDiscordCfg.getNewsUrl());
 
 		/* Check to ensure they match the initial values */
 		Assert.assertEquals("DToken1", mockDiscordCfg.getToken());
 		Assert.assertEquals("http://1.google.com", mockDiscordCfg.getEventCalendarUrl());
+		Assert.assertEquals("http://2.google.com", mockDiscordCfg.getNewsUrl());
 	}
-	
+
 	@Test
-	public void testLoadFromFile()
-	{
+	public void testLoadFromFile() {
 		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
 		try {
-			mockDiscordCfg.loadFromFile(this.getClass().getResource("/config-dev.xml").getPath());
+			mockDiscordCfg.loadFromFile(this.getClass().getResource("/config-test.xml").getPath());
 		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		Assert.assertEquals(mockDiscordCfg.getToken(), "DToken6");
 		Assert.assertEquals(mockDiscordCfg.getEventCalendarUrl(), "http://forums.soa-rs.com/");
-	}
-
-	@Test
-	public void testConfigurationNull() {
-		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
-
-		Assert.assertEquals(mockDiscordCfg.getToken(), null);
-		Assert.assertEquals(mockDiscordCfg.getEventCalendarUrl(), null);
+		Assert.assertEquals(mockDiscordCfg.getNewsUrl(), "http://forums.soa-rs.com/news");
 	}
 
 	@Test
@@ -77,17 +74,38 @@ public class DiscordCfgTest {
 	}
 
 	@Test
+	public void testSetAndGetNewsUrl() {
+		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
+
+		Assert.assertEquals(mockDiscordCfg.getNewsUrl(), null);
+		mockDiscordCfg.setNewsUrl("http://3.google.com");
+
+		Assert.assertEquals(mockDiscordCfg.getNewsUrl(), "http://3.google.com");
+	}
+
+	@Test
+	public void testSetAndGetNewsLastPost() {
+		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
+
+		Assert.assertEquals(mockDiscordCfg.getNewsLastPost(), null);
+		Date now = new Date();
+		mockDiscordCfg.setNewsLastPost(now);
+
+		Assert.assertEquals(mockDiscordCfg.getNewsLastPost(), now);
+	}
+
+	@Test
 	public void checkNecessaryConfigurationTest() {
 		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
 
 		Assert.assertFalse(mockDiscordCfg.checkNecessaryConfiguration());
 
 		mockDiscordCfg.setToken("DToken3");
-		Assert.assertFalse(mockDiscordCfg.checkNecessaryConfiguration());
-
-		mockDiscordCfg.setEventCalendarUrl("http://3.google.com");
-
 		Assert.assertTrue(mockDiscordCfg.checkNecessaryConfiguration());
+		Assert.assertEquals(mockDiscordCfg.getEventCalendarUrl(), "http://forums.soa-rs.com/calendar/events.xml");
+		Assert.assertEquals(mockDiscordCfg.getNewsUrl(), "");
+		Assert.assertEquals(mockDiscordCfg.getNewsLastPost(), null);
+
 	}
 
 }
