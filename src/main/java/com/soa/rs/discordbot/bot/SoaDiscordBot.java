@@ -42,6 +42,7 @@ public class SoaDiscordBot {
 			logger.info("Logged in to Discord");
 			EventDispatcher dispatcher = client.getDispatcher();
 			dispatcher.registerListener(new ReadyEventListener());
+			dispatcher.registerListener(new MessageReceivedEventListener());
 		}
 	}
 

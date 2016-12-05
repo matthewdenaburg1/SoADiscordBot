@@ -8,6 +8,7 @@ A Discord Bot written using the [Discord4J](https://github.com/austinv11/Discord
 To build the bot it is recommended to have:
 - Java 8.  Discord4J only supports Java 8.  You can download the JDK from [Oracle's Website](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
 - Apache Maven.  The bot is currently structured to build with Maven.  You can get Maven from [Apache's Website](https://maven.apache.org/)
+- If using the MusicPlayer, Python is required.
 
 The bot can be built by running the following command:
 ```
