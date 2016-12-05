@@ -16,6 +16,7 @@ import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
 public class ConfigWriter {
 
 	/**
+	 * Writes out the configuration file.
 	 * 
 	 * @param cfg
 	 *            The created DiscordConfiguration object to be marshalled to

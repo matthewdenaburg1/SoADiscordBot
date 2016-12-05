@@ -15,14 +15,19 @@ public class SoaDiscordBotConstants {
 	 */
 	// TODO Add default feed here
 	public static final String NEWS_FEED_URL = "";
-	
+
 	/**
 	 * Default username for the bot
 	 */
 	public static final String BOT_USERNAME = "SoA";
-	
+
 	/**
 	 * Default avatar for the bot
 	 */
 	public static final String AVATAR_URL = "http://soa-rs.com/img/greenlogo.png";
+
+	/**
+	 * Default "playing" status for the bot
+	 */
+	public static final String PLAYING_STATUS = "RuneScape Clan";
 }

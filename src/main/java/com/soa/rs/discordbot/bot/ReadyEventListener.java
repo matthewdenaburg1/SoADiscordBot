@@ -12,6 +12,7 @@ import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
+import sx.blah.discord.handle.obj.Status;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.Image;
 import sx.blah.discord.util.RateLimitException;
@@ -56,6 +57,7 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 			client.changeAvatar(Image.forUrl("png", SoaDiscordBotConstants.AVATAR_URL));
 			logger.info("Setting bot username to '" + SoaDiscordBotConstants.BOT_USERNAME + "'");
 			client.changeUsername(SoaDiscordBotConstants.BOT_USERNAME);
+			client.changeStatus(Status.game(SoaDiscordBotConstants.PLAYING_STATUS));
 
 		} catch (DiscordException | RateLimitException e) {
 			logger.error("Error updating username or avatar", e);
