@@ -103,7 +103,7 @@ public class DiscordCfgTest {
 		mockDiscordCfg.setToken("DToken3");
 		Assert.assertTrue(mockDiscordCfg.checkNecessaryConfiguration());
 		Assert.assertEquals(mockDiscordCfg.getEventCalendarUrl(), "http://forums.soa-rs.com/calendar/events.xml");
-		Assert.assertEquals(mockDiscordCfg.getNewsUrl(), "");
+		Assert.assertEquals(mockDiscordCfg.getNewsUrl(), "http://forums.soa-rs.com/rss/1-soa-promos-and-news.xml");
 		Assert.assertEquals(mockDiscordCfg.getNewsLastPost(), null);
 
 	}

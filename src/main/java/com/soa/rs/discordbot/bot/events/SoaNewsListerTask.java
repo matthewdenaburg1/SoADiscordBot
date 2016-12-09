@@ -64,7 +64,7 @@ public class SoaNewsListerTask extends TimerTask {
 		SoaNewsListParser parser = new SoaNewsListParser(this.url);
 		String news = parser.parse();
 
-		if (news != null) {
+		if (news != null && !news.equals("")) {
 			try {
 				List<IChannel> channels = client.getChannels();
 				for (IChannel channel : channels) {

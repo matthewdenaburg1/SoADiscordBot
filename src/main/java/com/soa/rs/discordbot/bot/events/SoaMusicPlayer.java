@@ -4,6 +4,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import net.dv8tion.d4j.player.MusicPlayer;
 import net.dv8tion.jda.player.Playlist;
 import net.dv8tion.jda.player.source.AudioInfo;
@@ -26,6 +29,13 @@ import sx.blah.discord.util.RateLimitException;
  * The SoaMusicPlayer is a slightly modified version of the implementation
  * example of the JDA-Player library which can be found on Github:
  * https://github.com/DV8FromTheWorld/JDA-Player
+ * <p>
+ * NOTE: The commands in this class are only permitted to be run by:
+ * <ul>
+ * <li>Eldars</li>
+ * <li>Lians</li>
+ * <li>Anyone temporarily assigned the role of "DJ"</li>
+ * </ul>
  */
 public class SoaMusicPlayer {
 
@@ -34,6 +44,7 @@ public class SoaMusicPlayer {
 	private IMessage msg;
 	private static final float DEFAULT_VOLUME = 0.35f;
 	private boolean inChannel = false;
+	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * Constructor
@@ -102,53 +113,107 @@ public class SoaMusicPlayer {
 	public void handleMusicArgs(MessageReceivedEvent event, String[] args)
 			throws MissingPermissionsException, RateLimitException, DiscordException {
 
+		StringBuilder sb = new StringBuilder();
 		if (!checkMusicRoles(event)) {
+			sb.append(event.getMessage().getAuthor().getName());
+			sb.append(" attempted to run a music command but did not have the appropriate rank.");
+			logger.info(sb.toString());
 			msg.getChannel().sendMessage("Sorry, only Lian+ or DJ rank can run the music player");
 			return;
 		}
 
+		sb.append(event.getMessage().getAuthor().getName());
+		sb.append(" executed music command: ");
+		sb.append(args[1]);
 		String message = args[1];
 		if (message.equals("volume")) {
+			sb.append(args[2]);
+			logger.info(sb.toString());
 			handleVolumeChange(args);
 		}
 
 		if (message.equals("list")) {
+			logger.info(sb.toString());
 			handleListMusicQueue();
 		}
 
 		if (message.equals("nowplaying")) {
+			logger.info(sb.toString());
 			handleNowPlayingListing();
 		}
 
 		if (message.equals("join")) {
+			logger.info(sb.toString());
 			handleJoinChannel();
 		}
 		if (message.equals("leave")) {
+			logger.info(sb.toString());
 			handleLeaveChannel();
 		}
 
 		if (message.equals("skip")) {
+			logger.info(sb.toString());
 			handleSkip();
 		}
 
 		if (message.equals("reset")) {
+			logger.info(sb.toString());
 			handleReset();
 		}
 
 		if (message.equals("play")) {
+			sb.append(args[2]);
+			logger.info(sb.toString());
 			handlePlay(event, args);
 		}
 
 		if (message.equals("pause")) {
+			logger.info(sb.toString());
 			handlePause();
 		}
 
 		if (message.equals("stop")) {
+			logger.info(sb.toString());
 			handleStop();
 		}
 
 		if (message.equals("restart")) {
+			logger.info(sb.toString());
 			handleRestartTrack();
+		}
+
+		if (message.equals("help")) {
+			logger.info(sb.toString());
+			handleHelp();
+		}
+	}
+
+	/**
+	 * Handles the help command
+	 */
+	private void handleHelp() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("```Help: Music (command: .music [args])\n");
+		sb.append(
+				"Note - This menu and these commands will only work for users assigned the role \"Eldar\", \"Lian\", or \"DJ\"\n\n");
+
+		sb.append(".music join - Bot joins the voice channel you are in.\n");
+		sb.append(".music play <url> - Bot queues up the URL provided.\n");
+		sb.append(".music pause - Bot pauses playback.\n");
+		sb.append(".music skip - Bot skips the currently playing song.\n");
+		sb.append(".music stop - Bot stops playing.\n");
+		sb.append(".music restart - Bot restarts playback of the current track.\n");
+		sb.append(".music list - Bot lists what is currently in the music queue.\n");
+		sb.append(".music nowplaying - Bot lists what is currently playing.\n");
+		sb.append(".music volume <0-100> - Sets volume to appropriate level.\n");
+		sb.append(".music leave - Bot leaves the voice channel.\n");
+		sb.append(".music reset - Bot resets all values back to default (volume, empties queue, etc).\n");
+		sb.append(".music help - Bot displays this menu.```");
+
+		try {
+			msg.getChannel().sendMessage(sb.toString());
+		} catch (MissingPermissionsException | RateLimitException | DiscordException e) {
+			logger.error("Error displaying music help", e);
 		}
 	}
 
@@ -245,7 +310,7 @@ public class SoaMusicPlayer {
 		} else if (args[1].equals("play") && args.length > 2) {
 			String infoMsg = "";
 			String url = args[2];
-			if(!inChannel){
+			if (!inChannel) {
 				handleJoinChannel();
 			}
 			Playlist playlist = Playlist.getPlaylist(url, event.getMessage().getGuild().getID());
@@ -270,12 +335,8 @@ public class SoaMusicPlayer {
 									try {
 										msg.getChannel().sendMessage(
 												"Error detected, skipping source. Error:\n" + info.getError());
-									} catch (MissingPermissionsException e) {
-										e.printStackTrace();
-									} catch (RateLimitException e) {
-										e.printStackTrace();
-									} catch (DiscordException e) {
-										e.printStackTrace();
+									} catch (MissingPermissionsException | RateLimitException | DiscordException e) {
+										logger.error("Error setting up playback", e);
 									}
 									it.remove();
 								}
@@ -284,12 +345,8 @@ public class SoaMusicPlayer {
 								msg.getChannel()
 										.sendMessage("Finished queuing provided playlist. Successfully queued **"
 												+ sources.size() + "** sources");
-							} catch (MissingPermissionsException e) {
-								e.printStackTrace();
-							} catch (RateLimitException e) {
-								e.printStackTrace();
-							} catch (DiscordException e) {
-								e.printStackTrace();
+							} catch (MissingPermissionsException | RateLimitException | DiscordException e) {
+								logger.error("Error setting up playback", e);
 							}
 						}
 					}
@@ -451,9 +508,9 @@ public class SoaMusicPlayer {
 			return;
 		}
 		float volume = Float.parseFloat(args[2]);
-		volume = volume/100;
+		volume = volume / 100;
 		volume = Math.min(1F, Math.max(0F, volume));
 		player.setVolume(volume);
-		msg.getChannel().sendMessage("Volume was changed to: " + (volume*100));
+		msg.getChannel().sendMessage("Volume was changed to: " + (volume * 100));
 	}
 }

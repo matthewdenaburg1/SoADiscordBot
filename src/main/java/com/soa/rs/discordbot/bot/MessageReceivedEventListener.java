@@ -38,6 +38,7 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 
 	/**
 	 * Handles the MessageReceivedEvent
+	 * @param event The Message Received Event
 	 */
 	public void handle(MessageReceivedEvent event) {
 		IMessage msg = event.getMessage();

@@ -14,7 +14,7 @@ public class SoaDiscordBotConstants {
 	 * Default news feed URL
 	 */
 	// TODO Add default feed here
-	public static final String NEWS_FEED_URL = "";
+	public static final String NEWS_FEED_URL = "http://forums.soa-rs.com/rss/1-soa-promos-and-news.xml";
 
 	/**
 	 * Default username for the bot

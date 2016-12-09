@@ -41,10 +41,8 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 				DiscordCfg.getInstance().getEventCalendarUrl());
 		listScheduler.scheduleTask();
 		// TODO uncomment below block when newsfeed is ready
-		// SoaTaskScheduler newsScheduler = new
-		// SoaNewsListerScheduler(client,
-		// DiscordCfg.getInstance().getNewsUrl());
-		// newsScheduler.scheduleTask();
+		SoaTaskScheduler newsScheduler = new SoaNewsListerScheduler(client, DiscordCfg.getInstance().getNewsUrl());
+		newsScheduler.scheduleTask();
 	}
 
 	/**

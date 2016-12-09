@@ -44,6 +44,7 @@ public class SoaNewsListParser extends SoaDefaultRssParser {
 
 			if (DiscordCfg.getInstance().getNewsLastPost() == null) {
 				DiscordCfg.getInstance().setNewsLastPost(now);
+				logger.info("LastNews is null, setting NewsLastPost to " + now.toString());
 				return null;
 			}
 
@@ -54,9 +55,11 @@ public class SoaNewsListParser extends SoaDefaultRssParser {
 				if (entry.getPublishedDate().compareTo(DiscordCfg.getInstance().getNewsLastPost()) > 0) {
 					sb.append("**News: **");
 					sb.append(entry.getTitle());
-					sb.append(": <" + entry.getLink() + ">\n");
+					sb.append(": " + entry.getLink() + "\n");
 				}
 			}
+			DiscordCfg.getInstance().setNewsLastPost(now);
+			logger.info("Setting NewsLastPost to " + now.toString());
 			return sb.toString();
 		} catch (IllegalArgumentException | FeedException | IOException e) {
 			logger.error("Error generating news list", e);
