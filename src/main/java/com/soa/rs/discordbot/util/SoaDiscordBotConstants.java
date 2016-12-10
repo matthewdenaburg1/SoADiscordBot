@@ -30,4 +30,9 @@ public class SoaDiscordBotConstants {
 	 * Default "playing" status for the bot
 	 */
 	public static final String PLAYING_STATUS = "RuneScape Clan";
+
+	public static final String FORUMTHREAD_URL = "http://forums.soa-rs.com/topic/22213-soas-new-discord-bot/";
+
+	public static final String GITHUB_URL = "https://github.com/SoAJeff/SoADiscordBot";
+
 }

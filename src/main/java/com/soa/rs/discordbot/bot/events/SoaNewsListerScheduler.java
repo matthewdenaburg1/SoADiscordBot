@@ -12,6 +12,9 @@ import com.soa.rs.discordbot.cfg.DiscordCfg;
 
 import sx.blah.discord.api.IDiscordClient;
 
+/**
+ * Handles the scheduling for the SoaNewsLister automated task
+ */
 public class SoaNewsListerScheduler implements SoaTaskScheduler {
 
 	private Timer timer;
@@ -20,6 +23,15 @@ public class SoaNewsListerScheduler implements SoaTaskScheduler {
 	private boolean firstRun = true;
 	private static final Logger logger = LogManager.getLogger();
 
+	/**
+	 * Creates a SoaNewsListerScheduler. Task must be scheduled by calling the
+	 * <tt>scheduleTask</tt> method.
+	 * 
+	 * @param client
+	 *            Discord Client to be used by the task.
+	 * @param url
+	 *            URL to the events RSS feed from the SoA forum calendar
+	 */
 	public SoaNewsListerScheduler(IDiscordClient client, String url) {
 		this.client = client;
 		this.url = url;
@@ -27,6 +39,9 @@ public class SoaNewsListerScheduler implements SoaTaskScheduler {
 		logger.info("Setting NewsLastPost to " + DiscordCfg.getInstance().getNewsLastPost().toString());
 	}
 
+	/**
+	 * Schedule the next run of the task to be 30 minutes from the previous.
+	 */
 	@Override
 	public void scheduleTask() {
 		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -38,8 +53,7 @@ public class SoaNewsListerScheduler implements SoaTaskScheduler {
 				cal.set(Calendar.MINUTE, 0);
 			}
 			firstRun = false;
-		}
-		else
+		} else
 			cal.add(Calendar.MINUTE, 30);
 
 		if (timer != null) {
@@ -52,6 +66,11 @@ public class SoaNewsListerScheduler implements SoaTaskScheduler {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.soa.rs.discordbot.bot.events.SoaTaskScheduler#rescheduleTask()
+	 */
 	@Override
 	public void rescheduleTask() {
 		this.timer.cancel();

@@ -83,6 +83,9 @@ public class SoaMusicPlayer {
 	 */
 	private boolean checkMusicRoles(MessageReceivedEvent event) {
 		IGuild guild = event.getMessage().getGuild();
+		if (guild == null) {
+			return false;
+		}
 		List<IRole> roleListing = new LinkedList<IRole>(event.getMessage().getAuthor().getRolesForGuild(guild));
 		Iterator<IRole> roleIterator = roleListing.iterator();
 
@@ -119,6 +122,11 @@ public class SoaMusicPlayer {
 			sb.append(" attempted to run a music command but did not have the appropriate rank.");
 			logger.info(sb.toString());
 			msg.getChannel().sendMessage("Sorry, only Lian+ or DJ rank can run the music player");
+			return;
+		}
+
+		if (args.length <= 1) {
+			handleHelp();
 			return;
 		}
 

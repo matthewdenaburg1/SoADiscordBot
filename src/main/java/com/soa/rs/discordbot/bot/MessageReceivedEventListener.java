@@ -3,7 +3,10 @@ package com.soa.rs.discordbot.bot;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.soa.rs.discordbot.bot.events.SoaAdminNewsEvent;
+import com.soa.rs.discordbot.bot.events.SoaBotInfoEvent;
 import com.soa.rs.discordbot.bot.events.SoaEventListerTask;
+import com.soa.rs.discordbot.bot.events.SoaHelpEvent;
 import com.soa.rs.discordbot.bot.events.SoaMusicPlayer;
 import com.soa.rs.discordbot.cfg.DiscordCfg;
 
@@ -38,7 +41,9 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 
 	/**
 	 * Handles the MessageReceivedEvent
-	 * @param event The Message Received Event
+	 * 
+	 * @param event
+	 *            The Message Received Event
 	 */
 	public void handle(MessageReceivedEvent event) {
 		IMessage msg = event.getMessage();
@@ -74,6 +79,23 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 					eventListerTask.setChannel(msg.getChannel());
 					eventListerTask.run();
 				}
+			}
+
+			else if (args[0].equals("info")) {
+				SoaBotInfoEvent infoEvent = new SoaBotInfoEvent(event);
+				infoEvent.executeEvent();
+			}
+
+			else if (args[0].equals("adminnews")) {
+				SoaAdminNewsEvent newsEvent = new SoaAdminNewsEvent(event);
+				newsEvent.setMustHavePermission(new String[] { "Eldar", "Lian" });
+				newsEvent.setArgs(args);
+				newsEvent.executeEvent();
+			}
+
+			else if (args[0].equals("help")) {
+				SoaHelpEvent helpEvent = new SoaHelpEvent(event);
+				helpEvent.executeEvent();
 			}
 		}
 
