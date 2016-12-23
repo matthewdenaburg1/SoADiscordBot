@@ -1,5 +1,7 @@
 package com.soa.rs.discordbot.bot;
 
+import java.time.LocalDateTime;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -9,7 +11,6 @@ import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventDispatcher;
 import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.RateLimitException;
 
 /**
  * The SoaDiscordBot class contains the necessary logic to log the bot into
@@ -40,6 +41,7 @@ public class SoaDiscordBot {
 		}
 		if (client != null) {
 			logger.info("Logged in to Discord");
+			DiscordCfg.getInstance().setLaunchTime(LocalDateTime.now());
 			EventDispatcher dispatcher = client.getDispatcher();
 			dispatcher.registerListener(new ReadyEventListener());
 			dispatcher.registerListener(new MessageReceivedEventListener());
@@ -64,8 +66,9 @@ public class SoaDiscordBot {
 	public void disconnect() {
 		try {
 			client.logout();
-		} catch (RateLimitException | DiscordException e) {
-			logger.error("Error when disconnecting from Discord", e);
+		} catch (DiscordException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

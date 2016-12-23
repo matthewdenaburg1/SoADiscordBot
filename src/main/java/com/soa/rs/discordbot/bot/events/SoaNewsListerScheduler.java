@@ -45,16 +45,12 @@ public class SoaNewsListerScheduler implements SoaTaskScheduler {
 	@Override
 	public void scheduleTask() {
 		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-		if (firstRun) {
-			if (cal.get(Calendar.MINUTE) > 0 && cal.get(Calendar.MINUTE) < 30)
-				cal.set(Calendar.MINUTE, 30);
-			else {
-				cal.add(Calendar.HOUR, 1);
-				cal.set(Calendar.MINUTE, 0);
-			}
-			firstRun = false;
-		} else
-			cal.add(Calendar.MINUTE, 30);
+		if (cal.get(Calendar.MINUTE) >= 0 && cal.get(Calendar.MINUTE) < 30)
+			cal.set(Calendar.MINUTE, 30);
+		else {
+			cal.add(Calendar.HOUR, 1);
+			cal.set(Calendar.MINUTE, 0);
+		}
 
 		if (timer != null) {
 			timer.cancel();

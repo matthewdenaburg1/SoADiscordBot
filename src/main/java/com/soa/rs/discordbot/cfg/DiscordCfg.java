@@ -1,5 +1,6 @@
 package com.soa.rs.discordbot.cfg;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import javax.xml.bind.JAXBException;
@@ -39,6 +40,11 @@ public class DiscordCfg {
 	 * The RSS feed URL for SoA News
 	 */
 	private static String newsUrl = null;
+
+	/**
+	 * The Uptime of the bot
+	 */
+	private static LocalDateTime launchTime = null;
 
 	protected DiscordCfg() {
 	}
@@ -160,6 +166,22 @@ public class DiscordCfg {
 	 */
 	public void setNewsUrl(String newsFeedUrl) {
 		newsUrl = newsFeedUrl;
+	}
+
+	/**
+	 * Get the launch time of the bot
+	 * @return the launch time for the bot
+	 */
+	public LocalDateTime getLaunchTime() {
+		return launchTime;
+	}
+
+	/**
+	 * Set the launch time of the bot
+	 * @param launchTime the launch time of the bot
+	 */
+	public void setLaunchTime(LocalDateTime launchTime) {
+		DiscordCfg.launchTime = launchTime;
 	}
 
 	/**

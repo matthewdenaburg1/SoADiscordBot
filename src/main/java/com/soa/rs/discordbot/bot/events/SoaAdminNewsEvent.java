@@ -2,6 +2,8 @@ package com.soa.rs.discordbot.bot.events;
 
 import java.util.List;
 
+import com.soa.rs.discordbot.util.NoDefinedRolesException;
+
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
@@ -74,7 +76,7 @@ public class SoaAdminNewsEvent extends AbstractSoaMsgRcvEvent {
 					}
 				}
 			}
-		} catch (MissingPermissionsException e) {
+		} catch (NoDefinedRolesException e) {
 		}
 	}
 }

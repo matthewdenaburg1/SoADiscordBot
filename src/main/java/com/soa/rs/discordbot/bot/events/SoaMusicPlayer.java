@@ -135,6 +135,7 @@ public class SoaMusicPlayer {
 		sb.append(args[1]);
 		String message = args[1];
 		if (message.equals("volume")) {
+			sb.append(" ");
 			sb.append(args[2]);
 			logger.info(sb.toString());
 			handleVolumeChange(args);
@@ -170,6 +171,7 @@ public class SoaMusicPlayer {
 		}
 
 		if (message.equals("play")) {
+			sb.append(" ");
 			sb.append(args[2]);
 			logger.info(sb.toString());
 			handlePlay(event, args);

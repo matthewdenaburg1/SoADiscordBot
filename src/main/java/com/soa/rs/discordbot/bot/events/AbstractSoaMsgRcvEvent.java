@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.soa.rs.discordbot.util.NoDefinedRolesException;
+
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IRole;
@@ -70,18 +72,15 @@ public abstract class AbstractSoaMsgRcvEvent {
 	 * this event
 	 * 
 	 * @return true if the user may execute the event, false otherwise.
-	 * @throws MissingPermissionsException
-	 *             If no users have been specified
+	 * @throws NoDefinedRolesException
+	 *             If no roles have been specified
 	 */
-	protected boolean permittedToExecuteEvent() throws MissingPermissionsException {
+	protected boolean permittedToExecuteEvent() throws NoDefinedRolesException {
 		if (mustHavePermission == null) {
-			throw new MissingPermissionsException("No ranks for which to limit this event to have been specified.");
+			throw new NoDefinedRolesException("No ranks for which to limit this event to have been specified.");
 		}
 		IGuild guild = event.getMessage().getGuild();
 		if (guild == null) {
-			if (event.getMessage().getAuthor().getName().contains("Jeff"))
-				return true;
-			else
 				return false;
 		}
 		List<IRole> roleListing = new LinkedList<IRole>(event.getMessage().getAuthor().getRolesForGuild(guild));
