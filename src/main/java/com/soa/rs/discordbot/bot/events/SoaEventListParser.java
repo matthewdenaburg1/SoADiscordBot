@@ -74,6 +74,8 @@ public class SoaEventListParser extends SoaDefaultRssParser {
 			cal2.setTimeZone(TimeZone.getTimeZone("UTC"));
 			cal2.setTime(today);
 
+			int i = 0;
+
 			Iterator<SyndEntry> entryIter = feed.getEntries().iterator();
 			StringBuilder sb = new StringBuilder();
 			sb.append("**Today's SoA Events**\n");
@@ -88,6 +90,7 @@ public class SoaEventListParser extends SoaDefaultRssParser {
 					sb.append(entry.getTitle());
 					sb.append("\nFor details, visit: <" + entry.getLink() + ">");
 					sb.append("\n\n");
+					i++;
 				}
 				// Ongoing events
 				if (DateAnalyzer.isBeforeDay(cal1, cal2) && entry.getTitle().toLowerCase().contains("ongoing")) {
@@ -95,6 +98,7 @@ public class SoaEventListParser extends SoaDefaultRssParser {
 					sb.append(entry.getTitle());
 					sb.append("\nFor details, visit: <" + entry.getLink() + ">");
 					sb.append("\n\n");
+					i++;
 				}
 				// Today's events
 				else if (DateAnalyzer.isSameDay(cal1, cal2)) {
@@ -102,7 +106,12 @@ public class SoaEventListParser extends SoaDefaultRssParser {
 					sb.append("\nEvent Date: " + sdf.format(entry.getPublishedDate()));
 					sb.append("\nFor details, visit: <" + entry.getLink() + ">");
 					sb.append("\n\n");
+					i++;
 				}
+			}
+			// If no events are scheduled for today, say that.
+			if (i == 0) {
+				sb.append("No events to show for today.\n\n");
 			}
 			sb.append("For more event information and upcoming events, check out the");
 			sb.append("\nEvents Forum: http://forums.soa-rs.com/forum/9-events/");

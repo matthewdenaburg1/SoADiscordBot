@@ -67,8 +67,7 @@ public class SoaDiscordBot {
 		try {
 			client.logout();
 		} catch (DiscordException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error when disconnecting from Discord", e);
 		}
 	}
 
