@@ -53,7 +53,7 @@ public class SoaMusicPlayer {
 		this.playerManager = new DefaultAudioPlayerManager();
 		this.musicManagers = new HashMap<>();
 
-		//For use of playing YT, Soundcloud, etc
+		// For use of playing YT, Soundcloud, etc
 		AudioSourceManagers.registerRemoteSources(playerManager);
 
 		this.msg = msg;
@@ -110,7 +110,7 @@ public class SoaMusicPlayer {
 		while (roleIterator.hasNext()) {
 			IRole role = roleIterator.next();
 			if (role.getName().equalsIgnoreCase("Eldar") || role.getName().equalsIgnoreCase("Lian")
-					|| role.getName().equalsIgnoreCase("DJ"))
+					|| role.getName().equalsIgnoreCase("Arquendi") || role.getName().equalsIgnoreCase("DJ"))
 				return true;
 		}
 		return false;
@@ -139,7 +139,7 @@ public class SoaMusicPlayer {
 			sb.append(event.getMessage().getAuthor().getName());
 			sb.append(" attempted to run a music command but did not have the appropriate rank.");
 			logger.info(sb.toString());
-			msg.getChannel().sendMessage("Sorry, only Lian+ or DJ rank can run the music player");
+			msg.getChannel().sendMessage("Sorry, only Arquendi+ or DJ rank can run the music player");
 			return;
 		}
 
@@ -363,6 +363,11 @@ public class SoaMusicPlayer {
 		try {
 			IVoiceChannel voicechannel = msg.getAuthor().getConnectedVoiceChannels().get(0);
 			voicechannel.join();
+
+			// Purposely set the volume to be low, so that no one's ears are
+			// blasted out if a track is loud
+			GuildMusicManager musicManager = getGuildAudioPlayer(msg.getGuild());
+			musicManager.player.setVolume(5);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			try {
 				msg.getChannel().sendMessage(msg.getAuthor().getName() + ", you aren't in a channel!");
