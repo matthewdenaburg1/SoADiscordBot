@@ -16,11 +16,6 @@
       <name>Maven Repository Switchboard</name>
       <url>http://repo1.maven.org/maven2</url>
     </repository>
-    <!-- Due to errors in the d4j player, this repo must be higher in the list so the patched d4j player is used -->
-    <repository>
-      <id>soa.rs</id>
-      <url>http://repo.spiritsofarianwyn.com</url>
-    </repository>
     <repository>
       <!-- This repo fixes issues with transitive dependencies -->
       <id>jcenter</id>
@@ -77,53 +72,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20150729</version>
-    </dependency>
-    <!-- Note - pull the next two from the soa repo
-         d4j-player has a bug that was patched by
-	 Jeff and re-deployed for use -->
-    <dependency>
-      <groupId>net.dv8tion</groupId>
-      <artifactId>d4j-player</artifactId>
-      <version>0.2.3_25</version>
-    </dependency>
-    <dependency>
-      <groupId>com.soa.rs</groupId>
-      <artifactId>d4j-player-libs-${arch}</artifactId>
-      <version>1.0</version>
+      <groupId>com.sedmelluq</groupId>
+      <artifactId>lavaplayer</artifactId>
+      <version>1.1.41</version>
     </dependency>
   </dependencies>
  
-  <profiles>
-    <profile>
-      <id>win64</id>
-      <properties>
-        <arch>win64</arch>
-      </properties>
-    </profile>
-    <profile>
-      <id>win32</id>
-      <properties>
-        <arch>win32</arch>
-      </properties>
-    </profile>
-    <profile>
-      <id>linux64</id>
-      <properties>
-        <arch>linux64</arch>
-      </properties>
-    </profile>
-    <profile>
-      <id>linux32</id>
-      <properties>
-        <arch>linux32</arch>
-      </properties>
-    </profile>
-  </profiles>
-
-
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
@@ -176,49 +130,7 @@
               <goal>run</goal>
             </goals>
           </execution>
-	  <execution>
-	    <id>chmod</id>
-	    <phase>package</phase>
-	    <goals>
-	      <goal>run</goal>
-	    </goals>
-	    <configuration>
-	      <tasks>
-	        <echo>running chmod on ffmpeg</echo>
-		<exec executable="chmod">
-		  <arg value="755"/>
-                  <arg value="${project.build.directory}/ffmpeg"/>
-		</exec>
-              </tasks>
-	    </configuration>
-	  </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-dependency-plugin</artifactId>
-	<executions>
-	  <execution>
-	    <phase>initialize</phase>
-	    <goals>
-	      <goal>unpack</goal>
-	    </goals>
-	    <configuration>
-	      <artifactItems>
-	        <artifactItem>
-	          <groupId>com.soa.rs</groupId>
-		  <artifactId>d4j-player-libs-${arch}</artifactId>
-		  <version>1.0</version>
-		  <type>jar</type>
-		  <overWrite>false</overWrite>
-		  <outputDirectory>${project.build.directory}</outputDirectory>
-		  <includes>*</includes>
-                  <excludes>META-INF</excludes>
-                </artifactItem>
-	      </artifactItems>
-	    </configuration>
-	  </execution>
-	</executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -245,11 +157,6 @@
               </excludes>
             </filter>
           </filters>
-	  <artifactSet>
-	    <excludes>
-	      <exclude>com.soa.rs:d4j-player-libs-${arch}:*</exclude>
-	    </excludes>
-	  </artifactSet>
         </configuration>
         <executions>
           <execution>
@@ -277,7 +184,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.10.4</version>
 	<configuration>
-	  <show>private</show>A
+	  <show>private</show>
 	  <excludePackageNames>com.soa.rs.discordbot.jaxb</excludePackageNames>
 	</configuration>
       </plugin>
