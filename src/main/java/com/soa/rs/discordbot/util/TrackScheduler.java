@@ -19,6 +19,8 @@ public class TrackScheduler extends AudioEventAdapter {
 	private final AudioPlayer player;
 	private final BlockingQueue<AudioTrack> queue;
 
+	private AudioTrack currentTrack;
+
 	/**
 	 * @param player
 	 *            The audio player this scheduler uses
@@ -43,6 +45,8 @@ public class TrackScheduler extends AudioEventAdapter {
 		// track goes to the queue instead.
 		if (!player.startTrack(track, true)) {
 			queue.offer(track);
+		} else {
+			currentTrack = track;
 		}
 	}
 
@@ -54,7 +58,8 @@ public class TrackScheduler extends AudioEventAdapter {
 		// or not. In case queue was empty, we are
 		// giving null to startTrack, which is a valid argument and will simply
 		// stop the player.
-		player.startTrack(queue.poll(), false);
+		currentTrack = queue.poll();
+		player.startTrack(currentTrack, false);
 	}
 
 	@Override
@@ -80,5 +85,15 @@ public class TrackScheduler extends AudioEventAdapter {
 	 */
 	public void emptyQueue() {
 		queue.clear();
+		currentTrack = null;
+	}
+
+	/**
+	 * Gets the current track
+	 * 
+	 * @return The current audio track
+	 */
+	public AudioTrack getCurrentTrack() {
+		return currentTrack;
 	}
 }

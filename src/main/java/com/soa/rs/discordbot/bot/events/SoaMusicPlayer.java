@@ -136,7 +136,8 @@ public class SoaMusicPlayer {
 			throws MissingPermissionsException, RateLimitException, DiscordException {
 
 		StringBuilder sb = new StringBuilder();
-		if (!checkMusicRoles(event) && !args[1].equalsIgnoreCase("playlist")) {
+		if (!checkMusicRoles(event) && !args[1].equalsIgnoreCase("playlist")
+				&& !args[1].equalsIgnoreCase("nowplaying")) {
 			sb.append(event.getMessage().getAuthor().getName());
 			sb.append(" attempted to run a music command but did not have the appropriate rank.");
 			logger.info(sb.toString());
@@ -178,6 +179,11 @@ public class SoaMusicPlayer {
 		if (message.equals("playlist")) {
 			logger.info(sb.toString());
 			handleListQueue(event.getMessage().getChannel());
+		}
+
+		if (message.equals("nowplaying")) {
+			logger.info(sb.toString());
+			handleNowPlaying(event.getMessage().getChannel());
 		}
 
 		if (message.equals("stop")) {
@@ -276,18 +282,33 @@ public class SoaMusicPlayer {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Currently within the Music Queue:\n\n");
 		int i = 1;
-		while (iter.hasNext()) {
-			track = iter.next();
-			sb.append(i + ": " + track.getInfo().title + "\n");
-			i++;
 
-			if (sb.length() > 1800) {
-				sendMessageToChannel(channel, sb.toString());
-				sb = new StringBuilder();
+		if (!iter.hasNext()) {
+			sb.append("Queue is empty.");
+		} else {
+			while (iter.hasNext()) {
+				track = iter.next();
+				sb.append(i + ": " + track.getInfo().title + "\n");
+				i++;
+
+				if (sb.length() > 1800) {
+					sendMessageToChannel(channel, sb.toString());
+					sb = new StringBuilder();
+				}
 			}
 		}
 		sendMessageToChannel(channel, sb.toString());
 
+	}
+
+	private void handleNowPlaying(IChannel channel) {
+		GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+		AudioTrack track = musicManager.scheduler.getCurrentTrack();
+		if (track != null) {
+			sendMessageToChannel(channel, "Now playing: " + track.getInfo().title);
+		} else {
+			sendMessageToChannel(channel, "Nothing is currently playing.");
+		}
 	}
 
 	/**
@@ -389,7 +410,8 @@ public class SoaMusicPlayer {
 		sb.append(".music resume - Bot resumes playback.\n");
 		sb.append(".music skip - Bot skips the currently playing song.\n");
 		sb.append(".music stop - Bot stops playing and empties playlist.\n");
-		sb.append(".music playlist - Bot lists currently queued playlist");
+		sb.append(".music playlist - Bot lists currently queued playlist.\n");
+		sb.append(".music nowplaying - Bot lists currently playing track.\n");
 		sb.append(".music volume <0-100> - Sets volume to appropriate level.\n");
 		sb.append(".music leave - Bot leaves the voice channel.\n");
 		sb.append(".music help - Bot displays this menu.```");
@@ -433,6 +455,7 @@ public class SoaMusicPlayer {
 	 * Handles leaving the currently joined Discord channel
 	 */
 	private void handleLeaveChannel() {
+		handleStop(msg.getChannel());
 		IDiscordClient client = msg.getClient();
 		IVoiceChannel chan = client.getConnectedVoiceChannels().stream().filter(c -> c.getGuild() == msg.getGuild())
 				.findFirst().orElse(null);

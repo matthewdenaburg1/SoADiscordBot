@@ -9,7 +9,6 @@ import com.soa.rs.discordbot.util.NoDefinedRolesException;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IRole;
-import sx.blah.discord.util.MissingPermissionsException;
 
 /**
  * This abstract class can be used by MessageReceivedEvents for some convienence

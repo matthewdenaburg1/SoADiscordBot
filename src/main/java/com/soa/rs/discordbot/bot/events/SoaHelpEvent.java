@@ -32,7 +32,7 @@ public class SoaHelpEvent extends AbstractSoaMsgRcvEvent {
 		sb.append("```Help: SoA Commands\n");
 		sb.append(".events - Displays an up-to-date listing of today's events.\n");
 		sb.append(".info - Display's bot info.\n");
-		sb.append(".music - Use .music help for music commands (Lian/Eldar/Temporary DJ rank only).\n");
+		sb.append(".music - Use .music help for music commands (Arquendi/Lian/Eldar/Temporary DJ rank only).\n");
 		sb.append("```");
 
 		try {

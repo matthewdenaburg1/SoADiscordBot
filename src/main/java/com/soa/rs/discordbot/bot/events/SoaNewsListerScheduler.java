@@ -20,7 +20,6 @@ public class SoaNewsListerScheduler implements SoaTaskScheduler {
 	private Timer timer;
 	private IDiscordClient client;
 	private String url;
-	private boolean firstRun = true;
 	private static final Logger logger = LogManager.getLogger();
 
 	/**
