@@ -65,4 +65,20 @@ public class TrackScheduler extends AudioEventAdapter {
 			nextTrack();
 		}
 	}
+
+	/**
+	 * Returns the queue of AudioTracks
+	 * 
+	 * @return The queue of tracks
+	 */
+	public BlockingQueue<AudioTrack> getQueue() {
+		return queue;
+	}
+
+	/**
+	 * Empties the queue of tracks to be played
+	 */
+	public void emptyQueue() {
+		queue.clear();
+	}
 }

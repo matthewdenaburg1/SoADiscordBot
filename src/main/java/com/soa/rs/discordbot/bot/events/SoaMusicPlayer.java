@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -135,7 +136,7 @@ public class SoaMusicPlayer {
 			throws MissingPermissionsException, RateLimitException, DiscordException {
 
 		StringBuilder sb = new StringBuilder();
-		if (!checkMusicRoles(event)) {
+		if (!checkMusicRoles(event) && !args[1].equalsIgnoreCase("playlist")) {
 			sb.append(event.getMessage().getAuthor().getName());
 			sb.append(" attempted to run a music command but did not have the appropriate rank.");
 			logger.info(sb.toString());
@@ -172,6 +173,11 @@ public class SoaMusicPlayer {
 			sb.append(" " + args[2]);
 			logger.info(sb.toString());
 			handlePlay(args, event.getMessage().getChannel());
+		}
+
+		if (message.equals("playlist")) {
+			logger.info(sb.toString());
+			handleListQueue(event.getMessage().getChannel());
 		}
 
 		if (message.equals("stop")) {
@@ -232,6 +238,13 @@ public class SoaMusicPlayer {
 						+ " (first track of playlist " + playlist.getName() + ")");
 
 				musicManager.scheduler.queue(firstTrack);
+
+				for (int i = 1; i < playlist.getTracks().size(); i++) {
+					firstTrack = playlist.getTracks().get(i);
+
+					musicManager.scheduler.queue(firstTrack);
+					logger.info("Adding song from Playlist: " + firstTrack.getInfo().title);
+				}
 			}
 
 			@Override
@@ -244,6 +257,37 @@ public class SoaMusicPlayer {
 				sendMessageToChannel(channel, "Could not play: " + exception.getMessage());
 			}
 		});
+	}
+
+	/**
+	 * List out all entries in the current music queue
+	 * 
+	 * @param channel
+	 *            The channel the message will be entered into
+	 */
+	private void handleListQueue(IChannel channel) {
+		GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+
+		BlockingQueue<AudioTrack> queue = musicManager.scheduler.getQueue();
+		AudioTrack track;
+
+		Iterator<AudioTrack> iter = queue.iterator();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("Currently within the Music Queue:\n\n");
+		int i = 1;
+		while (iter.hasNext()) {
+			track = iter.next();
+			sb.append(i + ": " + track.getInfo().title + "\n");
+			i++;
+
+			if (sb.length() > 1800) {
+				sendMessageToChannel(channel, sb.toString());
+				sb = new StringBuilder();
+			}
+		}
+		sendMessageToChannel(channel, sb.toString());
+
 	}
 
 	/**
@@ -271,6 +315,7 @@ public class SoaMusicPlayer {
 	private void handleStop(IChannel channel) {
 		GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
 		musicManager.player.stopTrack();
+		musicManager.scheduler.emptyQueue();
 	}
 
 	/**
@@ -336,14 +381,15 @@ public class SoaMusicPlayer {
 		StringBuilder sb = new StringBuilder();
 		sb.append("```Help: Music (command: .music [args])\n");
 		sb.append(
-				"Note - This menu and these commands will only work for users assigned the role \"Eldar\", \"Lian\", or \"DJ\"\n\n");
+				"Note - This menu and these commands will only work for users assigned the role \"Eldar\", \"Lian\", \"Arquendi\", or \"DJ\"\n\n");
 
 		sb.append(".music join - Bot joins the voice channel you are in.\n");
 		sb.append(".music play <url> - Bot queues up the URL provided.\n");
 		sb.append(".music pause - Bot pauses playback.\n");
 		sb.append(".music resume - Bot resumes playback.\n");
 		sb.append(".music skip - Bot skips the currently playing song.\n");
-		sb.append(".music stop - Bot stops playing.\n");
+		sb.append(".music stop - Bot stops playing and empties playlist.\n");
+		sb.append(".music playlist - Bot lists currently queued playlist");
 		sb.append(".music volume <0-100> - Sets volume to appropriate level.\n");
 		sb.append(".music leave - Bot leaves the voice channel.\n");
 		sb.append(".music help - Bot displays this menu.```");
