@@ -8,13 +8,13 @@ public class SoaDiscordBotConstants {
 	/**
 	 * Default event calendar feed URL
 	 */
-	public static final String EVENT_CALENDAR_URL = "http://forums.soa-rs.com/calendar/events.xml";
+	public static final String EVENT_CALENDAR_URL = "https://forums.soa-rs.com/calendar/events.xml";
 
 	/**
 	 * Default news feed URL
 	 */
 	// TODO Add default feed here
-	public static final String NEWS_FEED_URL = "http://forums.soa-rs.com/rss/1-soa-promos-and-news.xml";
+	public static final String NEWS_FEED_URL = "https://forums.soa-rs.com/rss/1-soa-promos-and-news.xml";
 
 	/**
 	 * Default username for the bot
@@ -31,7 +31,7 @@ public class SoaDiscordBotConstants {
 	 */
 	public static final String PLAYING_STATUS = "RuneScape Clan";
 
-	public static final String FORUMTHREAD_URL = "http://forums.soa-rs.com/topic/22213-soas-new-discord-bot/";
+	public static final String FORUMTHREAD_URL = "https://forums.soa-rs.com/topic/22213-soas-new-discord-bot/";
 
 	public static final String GITHUB_URL = "https://github.com/SoAJeff/SoADiscordBot";
 
