@@ -7,8 +7,16 @@ import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RateLimitException;
 
+/**
+ * This event was created for the purposes of annoying DJ and can be considered
+ * an 'easter egg'
+ */
 public class SoaDjPlsEvent extends AbstractSoaMsgRcvEvent {
 
+	/**
+	 * Create an instance of the event
+	 * @param event
+	 */
 	public SoaDjPlsEvent(MessageReceivedEvent event) {
 		super(event);
 	}
