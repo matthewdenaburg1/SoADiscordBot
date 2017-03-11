@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.soa.rs.discordbot.bot.events.SoaAdminNewsEvent;
 import com.soa.rs.discordbot.bot.events.SoaBotInfoEvent;
+import com.soa.rs.discordbot.bot.events.SoaDjPlsEvent;
 import com.soa.rs.discordbot.bot.events.SoaEventListerTask;
 import com.soa.rs.discordbot.bot.events.SoaHelpEvent;
 import com.soa.rs.discordbot.bot.events.SoaMusicPlayer;
@@ -97,6 +98,11 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 				SoaHelpEvent helpEvent = new SoaHelpEvent(event);
 				helpEvent.executeEvent();
 			}
+		} else if (msg.getContent().toLowerCase().contains("dj pls")
+				|| msg.getContent().toLowerCase().contains("dj is a noob")
+				|| msg.getContent().toLowerCase().contains("dj is a nublet")) {
+			SoaDjPlsEvent djPlsEvent = new SoaDjPlsEvent(event);
+			djPlsEvent.executeEvent();
 		}
 
 	}

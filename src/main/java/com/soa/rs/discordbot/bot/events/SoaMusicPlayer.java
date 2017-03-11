@@ -207,7 +207,9 @@ public class SoaMusicPlayer {
 		}
 
 		if (message.equals("volume")) {
-			sb.append(" " + args[2]);
+			if (args.length == 3) {
+				sb.append(" " + args[2]);
+			}
 			logger.info(sb.toString());
 			handleVolume(event.getMessage().getChannel(), args);
 		}
@@ -378,9 +380,14 @@ public class SoaMusicPlayer {
 	private void handleVolume(IChannel channel, String[] args) {
 		GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
 
-		int volume = Integer.parseInt(args[2]);
-		musicManager.player.setVolume(volume);
-		sendMessageToChannel(channel, "Volume set to " + volume);
+		if (args.length == 3) {
+			int volume = Integer.parseInt(args[2]);
+			musicManager.player.setVolume(volume);
+			sendMessageToChannel(channel, "Volume set to " + volume);
+		} else if (args.length == 2) {
+			sendMessageToChannel(channel, "Current volume is " + musicManager.player.getVolume());
+		}
+
 	}
 
 	/**
