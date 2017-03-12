@@ -1,8 +1,5 @@
 package com.soa.rs.discordbot.bot;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.soa.rs.discordbot.bot.events.SoaAdminNewsEvent;
 import com.soa.rs.discordbot.bot.events.SoaBotInfoEvent;
 import com.soa.rs.discordbot.bot.events.SoaDjPlsEvent;
@@ -10,6 +7,7 @@ import com.soa.rs.discordbot.bot.events.SoaEventListerTask;
 import com.soa.rs.discordbot.bot.events.SoaHelpEvent;
 import com.soa.rs.discordbot.bot.events.SoaMusicPlayer;
 import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
@@ -25,7 +23,6 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 	 * Bot command prefix - all commands MUST begin with this.
 	 */
 	private String botPrefix = ".";
-	private static final Logger logger = LogManager.getLogger();
 
 	/*
 	 * Recommend storing any classes for events as fields, as once they are
@@ -64,7 +61,7 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 					player.setMsg(msg);
 					player.handleMusicArgs(event, args);
 				} catch (Exception e) {
-					logger.error("Exception thrown in MusicPlayer", e);
+					SoaLogging.getLogger().error("Exception thrown in MusicPlayer", e);
 				}
 			}
 

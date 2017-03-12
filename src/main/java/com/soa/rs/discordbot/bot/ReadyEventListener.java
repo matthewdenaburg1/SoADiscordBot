@@ -1,13 +1,11 @@
 package com.soa.rs.discordbot.bot;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.soa.rs.discordbot.bot.events.SoaEventListerScheduler;
 import com.soa.rs.discordbot.bot.events.SoaNewsListerScheduler;
 import com.soa.rs.discordbot.bot.events.SoaTaskScheduler;
 import com.soa.rs.discordbot.cfg.DiscordCfg;
 import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.IListener;
@@ -26,7 +24,6 @@ import sx.blah.discord.util.RateLimitException;
 public class ReadyEventListener implements IListener<ReadyEvent> {
 
 	private IDiscordClient client;
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * Handles the ReadyEvent sent by the Discord API, this sets up the bot's
@@ -40,7 +37,6 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 		SoaTaskScheduler listScheduler = new SoaEventListerScheduler(client,
 				DiscordCfg.getInstance().getEventCalendarUrl());
 		listScheduler.scheduleTask();
-		// TODO uncomment below block when newsfeed is ready
 		SoaTaskScheduler newsScheduler = new SoaNewsListerScheduler(client, DiscordCfg.getInstance().getNewsUrl());
 		newsScheduler.scheduleTask();
 	}
@@ -51,14 +47,14 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 	private void setDiscordUserSettings() {
 
 		try {
-			logger.info("Setting bot avatar");
+			SoaLogging.getLogger().info("Setting bot avatar");
 			client.changeAvatar(Image.forUrl("png", SoaDiscordBotConstants.AVATAR_URL));
-			logger.info("Setting bot username to '" + SoaDiscordBotConstants.BOT_USERNAME + "'");
+			SoaLogging.getLogger().info("Setting bot username to '" + SoaDiscordBotConstants.BOT_USERNAME + "'");
 			client.changeUsername(SoaDiscordBotConstants.BOT_USERNAME);
 			client.changeStatus(Status.game(SoaDiscordBotConstants.PLAYING_STATUS));
 
 		} catch (DiscordException | RateLimitException e) {
-			logger.error("Error updating username or avatar", e);
+			SoaLogging.getLogger().error("Error updating username or avatar", e);
 		}
 	}
 

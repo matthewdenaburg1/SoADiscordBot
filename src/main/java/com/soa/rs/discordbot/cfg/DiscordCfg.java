@@ -5,11 +5,9 @@ import java.util.Date;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
 import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 /**
  * The <tt>DiscordCfg</tt> singleton class is used for storing any configuration
@@ -18,8 +16,6 @@ import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
  */
 
 public class DiscordCfg {
-
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * The event calendar feed from the SoA forums.
@@ -192,11 +188,11 @@ public class DiscordCfg {
 	 */
 	public boolean checkNecessaryConfiguration() {
 		if (eventForumUrl == null) {
-			logger.warn("Event calendar URL was null, setting to default");
+			SoaLogging.getLogger().warn("Event calendar URL was null, setting to default");
 			setEventCalendarUrl(SoaDiscordBotConstants.EVENT_CALENDAR_URL);
 		}
 		if (newsUrl == null) {
-			logger.warn("News feed URL was null, setting to default");
+			SoaLogging.getLogger().warn("News feed URL was null, setting to default");
 			setNewsUrl(SoaDiscordBotConstants.NEWS_FEED_URL);
 		}
 		if (eventForumUrl != null && newsUrl != null && token != null) {

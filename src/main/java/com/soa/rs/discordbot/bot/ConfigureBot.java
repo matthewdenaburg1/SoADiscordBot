@@ -2,12 +2,10 @@ package com.soa.rs.discordbot.bot;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.soa.rs.discordbot.cfg.ConfigWriter;
 import com.soa.rs.discordbot.cfg.DiscordCfg;
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 /**
  * The ConfigureBot class handles the initial configuration of the bot to
@@ -19,8 +17,6 @@ public class ConfigureBot {
 	 * The bot object
 	 */
 	private static SoaDiscordBot bot;
-
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * Constructor which passes the command line arguments to the parseArgs
@@ -67,7 +63,7 @@ public class ConfigureBot {
 			} else if (args[i].equals("-help")) {
 				printUsage();
 			} else {
-				logger.warn("Invalid argument: " + args[i] + ", skipping.");
+				SoaLogging.getLogger().warn("Invalid argument: " + args[i] + ", skipping.");
 			}
 			i++;
 		}
@@ -81,7 +77,7 @@ public class ConfigureBot {
 		if (!DiscordCfg.getInstance().checkNecessaryConfiguration()) {
 			printMissingConfiguration();
 		}
-		logger.info("*********STARTING*********");
+		SoaLogging.getLogger().info("*********STARTING*********");
 		Runtime.getRuntime().addShutdownHook(new DisconnectBot());
 		bot = new SoaDiscordBot();
 		bot.start();
@@ -91,7 +87,7 @@ public class ConfigureBot {
 	 * Prints out the missing configuration parameters
 	 */
 	private void printMissingConfiguration() {
-		logger.error("Missing required configuration item, the following were missing:"
+		SoaLogging.getLogger().error("Missing required configuration item, the following were missing:"
 				+ DiscordCfg.getInstance().getMissingConfigurationParameter());
 		printUsage();
 		System.exit(-1);
@@ -107,7 +103,7 @@ public class ConfigureBot {
 		try {
 			DiscordCfg.getInstance().loadFromFile(cfg);
 		} catch (JAXBException e) {
-			logger.error("Error loading configuration from xml file", e);
+			SoaLogging.getLogger().error("Error loading configuration from xml file", e);
 		}
 
 	}
@@ -128,7 +124,7 @@ public class ConfigureBot {
 			try {
 				writer.writeConfig(dsc, cfg);
 			} catch (JAXBException e) {
-				logger.error("Error writing configuration to xml file", e);
+				SoaLogging.getLogger().error("Error writing configuration to xml file", e);
 			}
 		} else {
 			printMissingConfiguration();
@@ -164,7 +160,7 @@ public class ConfigureBot {
 		 * Shutdown hook to disconnect the bot.
 		 */
 		public void run() {
-			logger.info("Disconnecting Bot");
+			SoaLogging.getLogger().info("Disconnecting Bot");
 			bot.disconnect();
 		}
 	}

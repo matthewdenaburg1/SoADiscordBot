@@ -20,4 +20,4 @@ The build creates a shaded Jar with all dependencies included within to make exe
 Javadocs for the current master branch can be found [here](https://soajeff.github.io/SoADiscordBot/)
 
 ## More Information
-For more information, please refer to the thread within Elvish Lounge found on the [SoA Forums](http://forums.soa-rs.com).
+For more information, please refer to the thread within Elvish Lounge found on the [SoA Forums](https://forums.soa-rs.com).

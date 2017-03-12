@@ -3,8 +3,7 @@ package com.soa.rs.discordbot.bot.events;
 import java.util.List;
 import java.util.TimerTask;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
@@ -46,8 +45,6 @@ public class SoaEventListerTask extends TimerTask {
 	 * The discord client object in use for interacting with the Discord API.
 	 */
 	private IDiscordClient client;
-
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * This constructor is used for running the task as a TimerTask, and is used
@@ -112,7 +109,7 @@ public class SoaEventListerTask extends TimerTask {
 	 */
 	@Override
 	public void run() {
-		logger.info("Executing SoaEventListerTask, scheduled = " + isScheduled());
+		SoaLogging.getLogger().info("Executing SoaEventListerTask, scheduled = " + isScheduled());
 		SoaEventListParser parser = new SoaEventListParser(this.url);
 		String events = parser.parse();
 
@@ -133,10 +130,10 @@ public class SoaEventListerTask extends TimerTask {
 
 				}
 			} catch (RateLimitException | DiscordException | MissingPermissionsException e) {
-				logger.error("Error listing events to Discord channels", e);
+				SoaLogging.getLogger().error("Error listing events to Discord channels", e);
 			}
 		} else {
-			logger.error("Error listing events, method returned null.  An exception may have been thrown.");
+			SoaLogging.getLogger().error("Error listing events, method returned null.  An exception may have been thrown.");
 		}
 
 		if (isScheduled()) {

@@ -4,20 +4,16 @@ import java.util.Date;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.soa.rs.discordbot.cfg.ConfigReader;
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
 import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 /**
  * This class is a clone of {@link com.soa.rs.discordbot.cfg.DiscordCfg} without
  * including the singleton elements, for the purposes of JUnit testing.
  */
 public class MockDiscordCfg {
-
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * The event calendar feed from the SoA forums.
@@ -40,6 +36,7 @@ public class MockDiscordCfg {
 	private String newsUrl = null;
 
 	public MockDiscordCfg() {
+		SoaLogging.initializeLogging();
 	}
 
 	/**
@@ -152,11 +149,11 @@ public class MockDiscordCfg {
 	 */
 	public boolean checkNecessaryConfiguration() {
 		if (eventForumUrl == null) {
-			logger.warn("Event calendar URL was null, setting to default");
+			SoaLogging.getLogger().warn("Event calendar URL was null, setting to default");
 			setEventCalendarUrl(SoaDiscordBotConstants.EVENT_CALENDAR_URL);
 		}
 		if (newsUrl == null) {
-			logger.warn("News feed URL was null, setting to default");
+			SoaLogging.getLogger().warn("News feed URL was null, setting to default");
 			setNewsUrl(SoaDiscordBotConstants.NEWS_FEED_URL);
 		}
 		if (eventForumUrl != null && newsUrl != null && token != null) {

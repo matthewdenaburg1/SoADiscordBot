@@ -2,10 +2,8 @@ package com.soa.rs.discordbot.bot;
 
 import java.time.LocalDateTime;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
@@ -25,22 +23,21 @@ public class SoaDiscordBot {
 	 * object.
 	 */
 	private IDiscordClient client = null;
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * Start the bot. This will log the bot into Discord and register
 	 * appropriate event listeners
 	 */
 	public void start() {
-		logger.info("Logging-in bot with Token: " + DiscordCfg.getInstance().getToken());
+		SoaLogging.getLogger().info("Logging-in bot with Token: " + DiscordCfg.getInstance().getToken());
 		try {
 			client = loginClient();
 		} catch (DiscordException e) {
 			// TODO Auto-generated catch block
-			logger.error("Error with logging in", e);
+			SoaLogging.getLogger().error("Error with logging in", e);
 		}
 		if (client != null) {
-			logger.info("Logged in to Discord");
+			SoaLogging.getLogger().info("Logged in to Discord");
 			DiscordCfg.getInstance().setLaunchTime(LocalDateTime.now());
 			EventDispatcher dispatcher = client.getDispatcher();
 			dispatcher.registerListener(new ReadyEventListener());
@@ -67,7 +64,7 @@ public class SoaDiscordBot {
 		try {
 			client.logout();
 		} catch (DiscordException e) {
-			logger.error("Error when disconnecting from Discord", e);
+			SoaLogging.getLogger().error("Error when disconnecting from Discord", e);
 		}
 	}
 

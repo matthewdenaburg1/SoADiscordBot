@@ -5,10 +5,8 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.Timer;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
 
@@ -20,7 +18,6 @@ public class SoaNewsListerScheduler implements SoaTaskScheduler {
 	private Timer timer;
 	private IDiscordClient client;
 	private String url;
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * Creates a SoaNewsListerScheduler. Task must be scheduled by calling the
@@ -35,7 +32,7 @@ public class SoaNewsListerScheduler implements SoaTaskScheduler {
 		this.client = client;
 		this.url = url;
 		DiscordCfg.getInstance().setNewsLastPost(new Date());
-		logger.info("Setting NewsLastPost to " + DiscordCfg.getInstance().getNewsLastPost().toString());
+		SoaLogging.getLogger().info("Setting NewsLastPost to " + DiscordCfg.getInstance().getNewsLastPost().toString());
 	}
 
 	/**
@@ -57,7 +54,7 @@ public class SoaNewsListerScheduler implements SoaTaskScheduler {
 		timer = new Timer();
 		timer.schedule(new SoaNewsListerTask(url, client, this), cal.getTime());
 
-		logger.info("Set next execution time for SoaNewsListerTask to be " + cal.getTime().toString());
+		SoaLogging.getLogger().info("Set next execution time for SoaNewsListerTask to be " + cal.getTime().toString());
 
 	}
 

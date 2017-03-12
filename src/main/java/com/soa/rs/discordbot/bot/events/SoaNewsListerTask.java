@@ -3,8 +3,7 @@ package com.soa.rs.discordbot.bot.events;
 import java.util.List;
 import java.util.TimerTask;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
@@ -33,7 +32,6 @@ public class SoaNewsListerTask extends TimerTask {
 	 * rescheduling the next run.
 	 */
 	private SoaNewsListerScheduler scheduler;
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * The constructor is used to instantiate the TimerTask
@@ -60,7 +58,7 @@ public class SoaNewsListerTask extends TimerTask {
 	 */
 	@Override
 	public void run() {
-		logger.info("Executing SoaNewsListerTask");
+		SoaLogging.getLogger().info("Executing SoaNewsListerTask");
 		SoaNewsListParser parser = new SoaNewsListParser(this.url);
 		String news = parser.parse();
 
@@ -74,10 +72,10 @@ public class SoaNewsListerTask extends TimerTask {
 				}
 
 			} catch (RateLimitException | DiscordException | MissingPermissionsException e) {
-				logger.error("Error listing news to Discord channels", e);
+				SoaLogging.getLogger().error("Error listing news to Discord channels", e);
 			}
 		} else {
-			logger.debug("No events to list to Discord.");
+			SoaLogging.getLogger().debug("No events to list to Discord.");
 		}
 
 		this.scheduler.rescheduleTask();

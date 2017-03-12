@@ -4,13 +4,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 /**
  * This class serves as a base for any RSS parsing that will be done from the
@@ -20,7 +18,6 @@ public abstract class SoaDefaultRssParser {
 
 	private URL url;
 	private SyndFeedInput input;
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * Constructor which also sets the feed URL
@@ -33,7 +30,7 @@ public abstract class SoaDefaultRssParser {
 			url = new URL(string);
 			input = new SyndFeedInput();
 		} catch (MalformedURLException e) {
-			logger.error("Error setting URL", e);
+			SoaLogging.getLogger().error("Error setting URL", e);
 		}
 	}
 
@@ -47,7 +44,7 @@ public abstract class SoaDefaultRssParser {
 		try {
 			url = new URL(string);
 		} catch (MalformedURLException e) {
-			logger.error("Error setting URL", e);
+			SoaLogging.getLogger().error("Error setting URL", e);
 		}
 	}
 

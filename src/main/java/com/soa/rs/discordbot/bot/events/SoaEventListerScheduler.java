@@ -7,6 +7,8 @@ import java.util.Timer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.soa.rs.discordbot.util.SoaLogging;
+
 import sx.blah.discord.api.IDiscordClient;
 
 /**
@@ -17,7 +19,6 @@ public class SoaEventListerScheduler implements SoaTaskScheduler {
 	private Timer timer;
 	private IDiscordClient client;
 	private String url;
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * Creates a SoaEventListScheduler. Task must be scheduled by calling the
@@ -50,7 +51,7 @@ public class SoaEventListerScheduler implements SoaTaskScheduler {
 		}
 		timer = new Timer();
 		timer.schedule(new SoaEventListerTask(url, client, this), cal.getTime());
-		logger.info("Set next execution time for SoaEventListerTask to be " + cal.getTime().toString());
+		SoaLogging.getLogger().info("Set next execution time for SoaEventListerTask to be " + cal.getTime().toString());
 
 	}
 

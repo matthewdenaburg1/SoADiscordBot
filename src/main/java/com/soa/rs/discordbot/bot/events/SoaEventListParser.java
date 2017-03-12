@@ -7,13 +7,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.TimeZone;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.soa.rs.discordbot.util.DateAnalyzer;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 /**
  * The SoaEventListParser retrieves the RSS feed provided by the SoA forums
@@ -22,8 +20,6 @@ import com.soa.rs.discordbot.util.DateAnalyzer;
  * if one is noted in the feed and any currently ongoing events.
  */
 public class SoaEventListParser extends SoaDefaultRssParser {
-
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * Constructor which also sets the feed URL
@@ -118,7 +114,7 @@ public class SoaEventListParser extends SoaDefaultRssParser {
 			sb.append("\nEvents Calendar: http://forums.soa-rs.com/calendar/");
 			return sb.toString();
 		} catch (IllegalArgumentException | FeedException | IOException e) {
-			logger.error("Error generating event list", e);
+			SoaLogging.getLogger().error("Error generating event list", e);
 		}
 
 		return null;

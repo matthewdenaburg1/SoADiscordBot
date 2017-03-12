@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -18,6 +15,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.soa.rs.discordbot.util.GuildMusicManager;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
@@ -45,8 +43,6 @@ import sx.blah.discord.util.RateLimitException;
 public class SoaMusicPlayer {
 
 	private IMessage msg;
-	private static final Logger logger = LogManager.getLogger();
-
 	private final AudioPlayerManager playerManager;
 	private final Map<Long, GuildMusicManager> musicManagers;
 
@@ -140,7 +136,7 @@ public class SoaMusicPlayer {
 				&& !args[1].equalsIgnoreCase("nowplaying")) {
 			sb.append(event.getMessage().getAuthor().getName());
 			sb.append(" attempted to run a music command but did not have the appropriate rank.");
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			msg.getChannel().sendMessage("Sorry, only Arquendi+ or DJ rank can run the music player");
 			return;
 		}
@@ -156,53 +152,53 @@ public class SoaMusicPlayer {
 		String message = args[1];
 
 		if (message.equals("join")) {
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			handleJoinChannel();
 		}
 
 		if (message.equals("leave")) {
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			handleLeaveChannel();
 		}
 
 		if (message.equals("help")) {
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			handleHelp();
 		}
 
 		if (message.equals("play")) {
 			sb.append(" " + args[2]);
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			handlePlay(args, event.getMessage().getChannel());
 		}
 
 		if (message.equals("playlist")) {
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			handleListQueue(event.getMessage().getChannel());
 		}
 
 		if (message.equals("nowplaying")) {
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			handleNowPlaying(event.getMessage().getChannel());
 		}
 
 		if (message.equals("stop")) {
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			handleStop(event.getMessage().getChannel());
 		}
 
 		if (message.equals("pause")) {
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			handlePause(event.getMessage().getChannel());
 		}
 
 		if (message.equals("resume")) {
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			handleResume(event.getMessage().getChannel());
 		}
 
 		if (message.equals("skip")) {
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			handleSkip(event.getMessage().getChannel());
 		}
 
@@ -210,7 +206,7 @@ public class SoaMusicPlayer {
 			if (args.length == 3) {
 				sb.append(" " + args[2]);
 			}
-			logger.info(sb.toString());
+			SoaLogging.getLogger().info(sb.toString());
 			handleVolume(event.getMessage().getChannel(), args);
 		}
 	}
@@ -251,7 +247,7 @@ public class SoaMusicPlayer {
 					firstTrack = playlist.getTracks().get(i);
 
 					musicManager.scheduler.queue(firstTrack);
-					logger.info("Adding song from Playlist: " + firstTrack.getInfo().title);
+					SoaLogging.getLogger().info("Adding song from Playlist: " + firstTrack.getInfo().title);
 				}
 			}
 
@@ -325,7 +321,7 @@ public class SoaMusicPlayer {
 		try {
 			channel.sendMessage(message);
 		} catch (Exception e) {
-			logger.warn("Failed to send message {} to {}", message, channel.getName(), e);
+			SoaLogging.getLogger().warn("Failed to send message {} to {}", message, channel.getName(), e);
 		}
 	}
 
@@ -426,7 +422,7 @@ public class SoaMusicPlayer {
 		try {
 			msg.getChannel().sendMessage(sb.toString());
 		} catch (MissingPermissionsException | RateLimitException | DiscordException e) {
-			logger.error("Error displaying music help", e);
+			SoaLogging.getLogger().error("Error displaying music help", e);
 		}
 	}
 

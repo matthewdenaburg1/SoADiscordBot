@@ -4,21 +4,17 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 /**
  * The SoaNewsListParser grabs information of new topics from the News and
  * announcements forum along with from the Promotions and Welcomes forum
  */
 public class SoaNewsListParser extends SoaDefaultRssParser {
-
-	private static final Logger logger = LogManager.getLogger();
 
 	/**
 	 * Constructor which also sets the feed URL
@@ -44,7 +40,7 @@ public class SoaNewsListParser extends SoaDefaultRssParser {
 
 			if (DiscordCfg.getInstance().getNewsLastPost() == null) {
 				DiscordCfg.getInstance().setNewsLastPost(now);
-				logger.info("LastNews is null, setting NewsLastPost to " + now.toString());
+				SoaLogging.getLogger().info("LastNews is null, setting NewsLastPost to " + now.toString());
 				return null;
 			}
 
@@ -59,10 +55,10 @@ public class SoaNewsListParser extends SoaDefaultRssParser {
 				}
 			}
 			DiscordCfg.getInstance().setNewsLastPost(now);
-			logger.info("Setting NewsLastPost to " + now.toString());
+			SoaLogging.getLogger().info("Setting NewsLastPost to " + now.toString());
 			return sb.toString();
 		} catch (IllegalArgumentException | FeedException | IOException e) {
-			logger.error("Error generating news list", e);
+			SoaLogging.getLogger().error("Error generating news list", e);
 		}
 		return null;
 	}
