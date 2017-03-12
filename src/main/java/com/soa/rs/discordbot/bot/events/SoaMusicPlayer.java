@@ -37,6 +37,7 @@ import sx.blah.discord.util.RateLimitException;
  * <ul>
  * <li>Eldars</li>
  * <li>Lians</li>
+ * <li>Arquendi</li>
  * <li>Anyone temporarily assigned the role of "DJ"</li>
  * </ul>
  */

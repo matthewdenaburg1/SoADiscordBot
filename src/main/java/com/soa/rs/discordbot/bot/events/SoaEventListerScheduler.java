@@ -4,9 +4,6 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.Timer;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
