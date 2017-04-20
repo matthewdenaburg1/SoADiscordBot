@@ -7,6 +7,7 @@ import com.soa.rs.discordbot.bot.events.SoaEventListerTask;
 import com.soa.rs.discordbot.bot.events.SoaHelpEvent;
 import com.soa.rs.discordbot.bot.events.SoaMusicPlayer;
 import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.events.IListener;
@@ -18,11 +19,6 @@ import sx.blah.discord.handle.obj.IMessage;
  * messages typed within a Discord channel
  */
 public class MessageReceivedEventListener implements IListener<MessageReceivedEvent> {
-
-	/**
-	 * Bot command prefix - all commands MUST begin with this.
-	 */
-	private String botPrefix = ".";
 
 	/*
 	 * Recommend storing any classes for events as fields, as once they are
@@ -46,8 +42,8 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 	public void handle(MessageReceivedEvent event) {
 		IMessage msg = event.getMessage();
 
-		if (msg.getContent().startsWith(botPrefix)) {
-			String command = msg.getContent().replaceFirst(botPrefix, "");
+		if (msg.getContent().startsWith(SoaDiscordBotConstants.BOT_PREFIX)) {
+			String command = msg.getContent().replaceFirst(SoaDiscordBotConstants.BOT_PREFIX, "");
 			String[] args = command.split(" ");
 
 			/*

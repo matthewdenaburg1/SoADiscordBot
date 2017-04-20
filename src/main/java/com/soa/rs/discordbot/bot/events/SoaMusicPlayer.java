@@ -15,6 +15,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.soa.rs.discordbot.util.GuildMusicManager;
+import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
@@ -24,9 +25,7 @@ import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IVoiceChannel;
-import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
-import sx.blah.discord.util.RateLimitException;
 
 /**
  * The SoaMusicPlayer is a slightly modified version of the implementation
@@ -121,16 +120,8 @@ public class SoaMusicPlayer {
 	 *            MessageReceivedEvent
 	 * @param args
 	 *            The additional arguments other than ".music" sent to the bot.
-	 * @throws MissingPermissionsException
-	 *             Thrown if the bot doesn't have permission to take the desired
-	 *             action
-	 * @throws RateLimitException
-	 *             Thrown if the bot has reached the rate limit
-	 * @throws DiscordException
-	 *             Thrown if any other generic Discord error has occurred.
 	 */
-	public void handleMusicArgs(MessageReceivedEvent event, String[] args)
-			throws MissingPermissionsException, RateLimitException, DiscordException {
+	public void handleMusicArgs(MessageReceivedEvent event, String[] args) {
 
 		StringBuilder sb = new StringBuilder();
 		if (!checkMusicRoles(event) && !args[1].equalsIgnoreCase("playlist")
@@ -138,7 +129,7 @@ public class SoaMusicPlayer {
 			sb.append(event.getMessage().getAuthor().getName());
 			sb.append(" attempted to run a music command but did not have the appropriate rank.");
 			SoaLogging.getLogger().info(sb.toString());
-			msg.getChannel().sendMessage("Sorry, only Arquendi+ or DJ rank can run the music player");
+			sendMessageToChannel(msg.getChannel(), "Sorry, only Arquendi+ or DJ rank can run the music player");
 			return;
 		}
 
@@ -319,11 +310,7 @@ public class SoaMusicPlayer {
 	 *            The message to be entered
 	 */
 	private void sendMessageToChannel(IChannel channel, String message) {
-		try {
-			channel.sendMessage(message);
-		} catch (Exception e) {
-			SoaLogging.getLogger().warn("Failed to send message {} to {}", message, channel.getName(), e);
-		}
+		SoaClientHelper.sendMsgToChannel(channel, message);
 	}
 
 	/**
@@ -420,11 +407,7 @@ public class SoaMusicPlayer {
 		sb.append(".music leave - Bot leaves the voice channel.\n");
 		sb.append(".music help - Bot displays this menu.```");
 
-		try {
-			msg.getChannel().sendMessage(sb.toString());
-		} catch (MissingPermissionsException | RateLimitException | DiscordException e) {
-			SoaLogging.getLogger().error("Error displaying music help", e);
-		}
+		sendMessageToChannel(msg.getChannel(), sb.toString());
 	}
 
 	/**
@@ -441,17 +424,10 @@ public class SoaMusicPlayer {
 			GuildMusicManager musicManager = getGuildAudioPlayer(msg.getGuild());
 			musicManager.player.setVolume(5);
 		} catch (ArrayIndexOutOfBoundsException e) {
-			try {
-				msg.getChannel().sendMessage(msg.getAuthor().getName() + ", you aren't in a channel!");
-			} catch (RateLimitException | DiscordException | MissingPermissionsException e1) {
-
-			}
+			sendMessageToChannel(msg.getChannel(), msg.getAuthor().getName() + ", you aren't in a channel!");
 		} catch (MissingPermissionsException e) {
-			try {
-				msg.getChannel().sendMessage(
-						msg.getAuthor().getName() + ", I don't have permission to join that channel.  Sorry!");
-			} catch (MissingPermissionsException | RateLimitException | DiscordException e1) {
-			}
+			sendMessageToChannel(msg.getChannel(),
+					msg.getAuthor().getName() + ", I don't have permission to join that channel.  Sorry!");
 		}
 	}
 

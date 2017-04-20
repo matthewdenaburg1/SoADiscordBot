@@ -1,9 +1,8 @@
 package com.soa.rs.discordbot.bot.events;
 
+import com.soa.rs.discordbot.util.SoaClientHelper;
+
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
-import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.MissingPermissionsException;
-import sx.blah.discord.util.RateLimitException;
 
 /**
  * The SoaHelpEvent displays a help message of the bot's commands
@@ -35,9 +34,6 @@ public class SoaHelpEvent extends AbstractSoaMsgRcvEvent {
 		sb.append(".music - Use .music help for music commands (Arquendi/Lian/Eldar/Temporary DJ rank only).\n");
 		sb.append("```");
 
-		try {
-			getEvent().getMessage().getChannel().sendMessage(sb.toString());
-		} catch (MissingPermissionsException | RateLimitException | DiscordException e) {
-		}
+		SoaClientHelper.sendMsgToChannel(getEvent().getMessage().getChannel(), sb.toString());
 	}
 }

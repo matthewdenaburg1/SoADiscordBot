@@ -3,14 +3,11 @@ package com.soa.rs.discordbot.bot.events;
 import java.util.List;
 import java.util.TimerTask;
 
+import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.MessageBuilder;
-import sx.blah.discord.util.MissingPermissionsException;
-import sx.blah.discord.util.RateLimitException;
 
 /**
  * The SoaEventListerTask can be run in one of two modes:
@@ -115,25 +112,22 @@ public class SoaEventListerTask extends TimerTask {
 
 		// Grab channels named "events" and put message in each one
 		if (events != null) {
-			try {
-				if (this.scheduler != null) {
-					List<IChannel> channels = client.getChannels();
-					for (IChannel channel : channels) {
-						if (channel.getName().equals("events")) {
-							new MessageBuilder(client).withChannel(channel).withContent(events).build();
-						}
+			if (this.scheduler != null) {
+				List<IChannel> channels = client.getChannels();
+				for (IChannel channel : channels) {
+					if (channel.getName().equals("events")) {
+						SoaClientHelper.sendMsgToChannel(channel, events);
 					}
-				} else {
-					if (channel != null) {
-						new MessageBuilder(client).withChannel(channel).withContent(events).build();
-					}
-
 				}
-			} catch (RateLimitException | DiscordException | MissingPermissionsException e) {
-				SoaLogging.getLogger().error("Error listing events to Discord channels", e);
+			} else {
+				if (channel != null) {
+					SoaClientHelper.sendMsgToChannel(channel, events);
+				}
+
 			}
 		} else {
-			SoaLogging.getLogger().error("Error listing events, method returned null.  An exception may have been thrown.");
+			SoaLogging.getLogger()
+					.error("Error listing events, method returned null.  An exception may have been thrown.");
 		}
 
 		if (isScheduled()) {

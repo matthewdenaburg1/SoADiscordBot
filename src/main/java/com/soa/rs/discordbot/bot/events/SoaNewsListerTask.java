@@ -3,14 +3,11 @@ package com.soa.rs.discordbot.bot.events;
 import java.util.List;
 import java.util.TimerTask;
 
+import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.MessageBuilder;
-import sx.blah.discord.util.MissingPermissionsException;
-import sx.blah.discord.util.RateLimitException;
 
 /**
  * The SoaNewsListerTask is executed once per hour, and will fetch information
@@ -63,19 +60,15 @@ public class SoaNewsListerTask extends TimerTask {
 		String news = parser.parse();
 
 		if (news != null && !news.equals("")) {
-			try {
-				List<IChannel> channels = client.getChannels();
-				for (IChannel channel : channels) {
-					if (channel.getName().equals("shoutbox")) {
-						new MessageBuilder(client).withChannel(channel).withContent(news).build();
-					}
+			List<IChannel> channels = client.getChannels();
+			for (IChannel channel : channels) {
+				if (channel.getName().equals("shoutbox")) {
+					SoaClientHelper.sendMsgToChannel(channel, news);
 				}
-
-			} catch (RateLimitException | DiscordException | MissingPermissionsException e) {
-				SoaLogging.getLogger().error("Error listing news to Discord channels", e);
 			}
+
 		} else {
-			SoaLogging.getLogger().debug("No events to list to Discord.");
+			SoaLogging.getLogger().debug("No news to list to Discord.");
 		}
 
 		this.scheduler.rescheduleTask();

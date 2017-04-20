@@ -41,4 +41,9 @@ public class SoaDiscordBotConstants {
 	 */
 	public static final String GITHUB_URL = "https://github.com/SoAJeff/SoADiscordBot";
 
+	/**
+	 * Prefix used for any command caught by the MessageReceivedEventListener
+	 */
+	public static final String BOT_PREFIX = ".";
+
 }

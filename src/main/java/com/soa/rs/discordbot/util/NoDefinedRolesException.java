@@ -16,7 +16,7 @@ public class NoDefinedRolesException extends Exception {
 	/**
 	 * Throws the exception with the defined message
 	 * 
-	 * @param message
+	 * @param message The message associated with the exception
 	 */
 	public NoDefinedRolesException(String message) {
 		super(message);
@@ -25,7 +25,7 @@ public class NoDefinedRolesException extends Exception {
 	/**
 	 * Throws the exception with the defined message
 	 * 
-	 * @param cause
+	 * @param cause The cause of the exception
 	 */
 	public NoDefinedRolesException(Throwable cause) {
 		super(cause);
@@ -34,8 +34,8 @@ public class NoDefinedRolesException extends Exception {
 	/**
 	 * Throws the exception with the defined message and cause
 	 * 
-	 * @param message
-	 * @param cause
+	 * @param message The message associated with the exception
+	 * @param cause The cause of the exception
 	 */
 	public NoDefinedRolesException(String message, Throwable cause) {
 		super(message, cause);

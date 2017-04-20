@@ -3,14 +3,11 @@ package com.soa.rs.discordbot.bot.events;
 import java.util.List;
 
 import com.soa.rs.discordbot.util.NoDefinedRolesException;
+import com.soa.rs.discordbot.util.SoaClientHelper;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.MessageBuilder;
-import sx.blah.discord.util.MissingPermissionsException;
-import sx.blah.discord.util.RateLimitException;
 
 /**
  * The SoaAdminNewsEvent can be used for an admin (Lian/Eldar or Jeff) to
@@ -67,12 +64,7 @@ public class SoaAdminNewsEvent extends AbstractSoaMsgRcvEvent {
 				List<IChannel> channels = client.getChannels();
 				for (IChannel channel : channels) {
 					if (channel.getName().equals(channelName)) {
-						try {
-							new MessageBuilder(client).withChannel(channel).withContent(sb.toString()).build();
-						} catch (RateLimitException | DiscordException | MissingPermissionsException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						SoaClientHelper.sendMsgToChannel(channel, sb.toString());
 					}
 				}
 			}
