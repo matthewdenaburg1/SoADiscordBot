@@ -11,13 +11,13 @@ To build the bot it is recommended to have:
 
 The bot can be built by running the following command:
 ```
-mvn clean package
+mvn clean install
 ```
 
-The build creates a shaded Jar with all dependencies included within to make executing the bot easier.
+The build creates a shaded Jar with all dependencies included within to make executing the bot easier.  The build also creates the triviacreator application.
 
 ## Javadocs
-Javadocs for the current master branch can be found [here](https://soajeff.github.io/SoADiscordBot/)
+Javadocs for the current master branch (of the discordbot module only) can be found [here](https://soajeff.github.io/SoADiscordBot/)
 
 ## More Information
 For more information, please refer to the thread within Elvish Lounge found on the [SoA Forums](https://forums.soa-rs.com).
