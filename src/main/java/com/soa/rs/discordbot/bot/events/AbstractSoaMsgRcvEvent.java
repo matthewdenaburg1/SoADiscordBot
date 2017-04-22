@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.soa.rs.discordbot.util.NoDefinedRolesException;
 
-import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IRole;
 

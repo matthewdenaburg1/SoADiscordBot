@@ -7,7 +7,7 @@ import com.soa.rs.discordbot.cfg.DiscordCfg;
 import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 
-import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 
 /**
  * The SoaBotInfoEvent displays general information about the bot.

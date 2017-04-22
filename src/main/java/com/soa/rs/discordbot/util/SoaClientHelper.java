@@ -2,7 +2,6 @@ package com.soa.rs.discordbot.util;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.Status;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.Image;
 import sx.blah.discord.util.MissingPermissionsException;
@@ -85,7 +84,7 @@ public class SoaClientHelper {
 	 */
 	public static void setBotPlaying(IDiscordClient client, String playing) {
 		RequestBuffer.request(() -> {
-			client.changeStatus(Status.game(playing));
+			client.changePlayingText(playing);
 		});
 	}
 

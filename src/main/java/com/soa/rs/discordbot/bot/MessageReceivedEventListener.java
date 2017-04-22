@@ -11,7 +11,7 @@ import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.events.IListener;
-import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IMessage;
 
 /**

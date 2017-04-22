@@ -2,7 +2,7 @@ package com.soa.rs.discordbot.bot.events;
 
 import com.soa.rs.discordbot.util.SoaClientHelper;
 
-import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 
 /**
  * The SoaHelpEvent displays a help message of the bot's commands

@@ -4,7 +4,7 @@ import java.util.Random;
 
 import com.soa.rs.discordbot.util.SoaClientHelper;
 
-import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 
 /**
  * This event was created for the purposes of annoying DJ and can be considered

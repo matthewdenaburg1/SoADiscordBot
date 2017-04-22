@@ -7,6 +7,8 @@ package com.soa.rs.discordbot.util;
  */
 public class NoDefinedRolesException extends Exception {
 
+	private static final long serialVersionUID = -8188658573295643611L;
+
 	/**
 	 * Throws the exception.
 	 */

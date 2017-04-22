@@ -19,7 +19,7 @@ import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
-import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
@@ -75,7 +75,7 @@ public class SoaMusicPlayer {
 	 * @return The music manager for the guild
 	 */
 	private synchronized GuildMusicManager getGuildAudioPlayer(IGuild guild) {
-		long guildId = Long.parseLong(guild.getID());
+		long guildId = guild.getLongID();
 		GuildMusicManager musicManager = musicManagers.get(guildId);
 
 		if (musicManager == null) {
@@ -416,7 +416,7 @@ public class SoaMusicPlayer {
 	 */
 	private void handleJoinChannel() {
 		try {
-			IVoiceChannel voicechannel = msg.getAuthor().getConnectedVoiceChannels().get(0);
+			IVoiceChannel voicechannel = msg.getAuthor().getVoiceStateForGuild(msg.getGuild()).getChannel();
 			voicechannel.join();
 
 			// Purposely set the volume to be low, so that no one's ears are
