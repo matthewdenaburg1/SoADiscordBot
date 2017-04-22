@@ -1,5 +1,5 @@
 # Spirits of Arianwyn Discord Bot
-Version: 1.2:  [![Build Status](https://travis-ci.org/SoAJeff/SoADiscordBot.svg?branch=master)](https://travis-ci.org/SoAJeff/SoADiscordBot)
+Version: 1.3:  [![Build Status](https://travis-ci.org/SoAJeff/SoADiscordBot.svg?branch=master)](https://travis-ci.org/SoAJeff/SoADiscordBot)
 Dev Branch: [![Build Status](https://travis-ci.org/SoAJeff/SoADiscordBot.svg?branch=dev)](https://travis-ci.org/SoAJeff/SoADiscordBot)
 
 A Discord Bot written using the [Discord4J](https://github.com/austinv11/Discord4J) Java library for use by the Spirits of Arianwyn RuneScape clan's Discord Server.
