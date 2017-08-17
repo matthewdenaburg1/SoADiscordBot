@@ -6,6 +6,7 @@ import com.soa.rs.discordbot.bot.events.SoaDjPlsEvent;
 import com.soa.rs.discordbot.bot.events.SoaEventListerTask;
 import com.soa.rs.discordbot.bot.events.SoaHelpEvent;
 import com.soa.rs.discordbot.bot.events.SoaMusicPlayer;
+import com.soa.rs.discordbot.bot.events.SoaTriviaManager;
 import com.soa.rs.discordbot.cfg.DiscordCfg;
 import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 import com.soa.rs.discordbot.util.SoaLogging;
@@ -21,8 +22,8 @@ import sx.blah.discord.handle.obj.IMessage;
 public class MessageReceivedEventListener implements IListener<MessageReceivedEvent> {
 
 	/*
-	 * Recommend storing any classes for events as fields, as once they are
-	 * created they hopefully won't need to be recreated
+	 * Recommend storing any classes for events as fields, as once they are created
+	 * they hopefully won't need to be recreated
 	 */
 	/**
 	 * Music player instance for the bot.
@@ -32,6 +33,8 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 	 * Event Lister for the MessageReceivedEvent
 	 */
 	private SoaEventListerTask eventListerTask = null;
+
+	private SoaTriviaManager triviaManager = null;
 
 	/**
 	 * Handles the MessageReceivedEvent
@@ -64,7 +67,7 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 			/*
 			 * Event Lister command
 			 */
-			else if (args[0].equals("events")) {
+			else if (args[0].equalsIgnoreCase("events")) {
 				if (eventListerTask == null) {
 					eventListerTask = new SoaEventListerTask(DiscordCfg.getInstance().getEventCalendarUrl(),
 							event.getClient(), msg.getChannel());
@@ -75,19 +78,27 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 				}
 			}
 
-			else if (args[0].equals("info")) {
+			else if (args[0].equalsIgnoreCase("trivia")) {
+				if (triviaManager == null) {
+					triviaManager = new SoaTriviaManager();
+				}
+				triviaManager.setMsg(msg);
+				triviaManager.executeCmd(args);
+			}
+
+			else if (args[0].equalsIgnoreCase("info")) {
 				SoaBotInfoEvent infoEvent = new SoaBotInfoEvent(event);
 				infoEvent.executeEvent();
 			}
 
-			else if (args[0].equals("adminnews")) {
+			else if (args[0].equalsIgnoreCase("adminnews")) {
 				SoaAdminNewsEvent newsEvent = new SoaAdminNewsEvent(event);
 				newsEvent.setMustHavePermission(new String[] { "Eldar", "Lian" });
 				newsEvent.setArgs(args);
 				newsEvent.executeEvent();
 			}
 
-			else if (args[0].equals("help")) {
+			else if (args[0].equalsIgnoreCase("help")) {
 				SoaHelpEvent helpEvent = new SoaHelpEvent(event);
 				helpEvent.executeEvent();
 			}

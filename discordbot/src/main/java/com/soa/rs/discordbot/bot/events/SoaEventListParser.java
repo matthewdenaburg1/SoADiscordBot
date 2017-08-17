@@ -110,8 +110,8 @@ public class SoaEventListParser extends SoaDefaultRssParser {
 				sb.append("No events to show for today.\n\n");
 			}
 			sb.append("For more event information and upcoming events, check out the");
-			sb.append("\nEvents Forum: http://forums.soa-rs.com/forum/9-events/");
-			sb.append("\nEvents Calendar: http://forums.soa-rs.com/calendar/");
+			sb.append("\nEvents Forum: https://forums.soa-rs.com/forum/9-events/");
+			sb.append("\nEvents Calendar: https://forums.soa-rs.com/calendar/");
 			return sb.toString();
 		} catch (IllegalArgumentException | FeedException | IOException e) {
 			SoaLogging.getLogger().error("Error generating event list", e);

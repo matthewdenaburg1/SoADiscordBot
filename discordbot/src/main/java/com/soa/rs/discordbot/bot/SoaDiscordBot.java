@@ -42,6 +42,7 @@ public class SoaDiscordBot {
 			EventDispatcher dispatcher = client.getDispatcher();
 			dispatcher.registerListener(new ReadyEventListener());
 			dispatcher.registerListener(new MessageReceivedEventListener());
+			dispatcher.registerListener(new ReconnectedEventListener());
 		}
 	}
 

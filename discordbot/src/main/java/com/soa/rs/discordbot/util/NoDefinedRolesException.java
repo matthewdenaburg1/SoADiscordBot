@@ -25,7 +25,7 @@ public class NoDefinedRolesException extends Exception {
 	}
 
 	/**
-	 * Throws the exception with the defined message
+	 * Throws the exception with the defined cause
 	 * 
 	 * @param cause The cause of the exception
 	 */

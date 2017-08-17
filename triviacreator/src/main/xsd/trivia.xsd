@@ -13,6 +13,7 @@
 	  <xsd:element name="server-id" type="xsd:string" minOccurs="1" maxOccurs="1"/>
 	  <xsd:element name="channel-id" type="xsd:string" minOccurs="1" maxOccurs="1"/>
 	  <xsd:element name="wait-time" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+	  <xsd:element name="forum-url" type="xsd:string" minOccurs="0" maxOccurs="1"/>
 	  <xsd:element name="question-bank" type="Question-Bank" minOccurs="1" maxOccurs="1"/>
     </xsd:sequence>
   </xsd:complexType>
