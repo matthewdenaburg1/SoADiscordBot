@@ -45,6 +45,18 @@ public class TriviaFileReader {
 		return config;
 	}
 
+	/**
+	 * Loads a configuration from a URL. It is expected this will be used to obtain
+	 * the Trivia Configuration uploaded to a Discord PM channel.
+	 * 
+	 * @param url
+	 *            The URL of the attachment
+	 * @return The Trivia configuration to be used
+	 * @throws JAXBException
+	 *             If the file cannot be successfully loaded due to an error.
+	 * @throws IOException
+	 *             If there is an error reading to the stream.
+	 */
 	public TriviaConfiguration loadTriviaConfigFromURL(URL url) throws JAXBException, IOException {
 		TriviaConfiguration config = null;
 		JAXBContext jaxbContext = JAXBContext.newInstance("com.soa.rs.triviacreator.jaxb");

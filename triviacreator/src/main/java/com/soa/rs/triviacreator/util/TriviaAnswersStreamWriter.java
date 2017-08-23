@@ -13,6 +13,10 @@ import javax.xml.bind.Marshaller;
 import com.soa.rs.triviacreator.jaxb.ObjectFactory;
 import com.soa.rs.triviacreator.jaxb.TriviaAnswers;
 
+/**
+ * The TriviaAnswersStreamWriter writes the Trivia Answers to a stream that can
+ * then be sent to the Discord server
+ */
 public class TriviaAnswersStreamWriter {
 
 	private final ObjectFactory objectFactory = new ObjectFactory();

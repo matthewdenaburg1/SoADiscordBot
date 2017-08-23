@@ -1,18 +1,15 @@
-package com.soa.rs.discordbot.util;
+package com.soa.rs.triviacreator.util;
 
 /**
- * The NoSuchServerException is thrown if a server UID is given but is not one
- * that the bot is connected to.
+ * The InvalidConfigurationException is thrown if the provided configuration is
+ * not able to be validated and therefore cannot be used.
  */
-public class NoSuchServerException extends Exception {
-
-	private static final long serialVersionUID = 7697592447942724767L;
+public class InvalidConfigurationException extends Exception {
 
 	/**
-	 * Throws the exception.
+	 * 
 	 */
-	public NoSuchServerException() {
-	}
+	private static final long serialVersionUID = 2726872510592033356L;
 
 	/**
 	 * Throws the exception with the defined message
@@ -20,7 +17,7 @@ public class NoSuchServerException extends Exception {
 	 * @param message
 	 *            The message associated with the exception
 	 */
-	public NoSuchServerException(String message) {
+	public InvalidConfigurationException(String message) {
 		super(message);
 	}
 
@@ -30,7 +27,7 @@ public class NoSuchServerException extends Exception {
 	 * @param cause
 	 *            The cause of the exception
 	 */
-	public NoSuchServerException(Throwable cause) {
+	public InvalidConfigurationException(Throwable cause) {
 		super(cause);
 	}
 
@@ -42,7 +39,7 @@ public class NoSuchServerException extends Exception {
 	 * @param cause
 	 *            The cause of the exception
 	 */
-	public NoSuchServerException(String message, Throwable cause) {
+	public InvalidConfigurationException(String message, Throwable cause) {
 		super(message, cause);
 	}
 

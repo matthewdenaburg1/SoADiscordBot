@@ -46,4 +46,10 @@ public class SoaDiscordBotConstants {
 	 */
 	public static final String BOT_PREFIX = ".";
 
+	/**
+	 * The standard set of staff roles within SoA used for checking if user is a
+	 * member of staff
+	 */
+	public static final String[] STAFF_ROLES = new String[] { "Eldar", "Lian", "Arquendi" };
+
 }

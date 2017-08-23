@@ -19,36 +19,91 @@ import com.soa.rs.triviacreator.util.TriviaAnswersStreamWriter;
 
 import sx.blah.discord.api.IDiscordClient;
 
+/**
+ * The <tt>SoaTrivia</tt> class contains the runnable trivia thread, along with
+ * various configuration parameters needed for executing trivia.
+ */
 public class SoaTrivia implements Runnable {
 
+	/**
+	 * The client the bot is connected to for the Discord API.
+	 */
 	private IDiscordClient client;
+
+	/**
+	 * A constant string to be used for indicating how to answer a question
+	 */
 	private final String answerFormat = "PM your answers to me, beginning your answer with \".trivia answer\". \nThe question is: ";
+
+	/**
+	 * A constant 'times up' string when announcing an answer
+	 */
 	private final String timesUp = "Time's up!  The answer was: ";
+
+	/**
+	 * Boolean detailing whether trivia is currently running or not.
+	 */
 	private boolean triviaEnabled = false;
+
+	/**
+	 * The trivia configuration to be used
+	 */
 	private TriviaConfiguration configuration;
+
+	/**
+	 * The Discord ID of the triviamaster who submitted the configuration
+	 */
 	private long triviaMaster = -1;
+
+	/**
+	 * An object representing a Trivia Question; contains a question and its
+	 * associated correct answer
+	 */
 	private TriviaQuestion question;
+
+	/**
+	 * The Answers document for holding all submitted answers.
+	 */
 	private TriviaAnswers answersDoc;
 
+	/**
+	 * Basic constructor
+	 * 
+	 * @param client
+	 *            The client representing the Discord API
+	 */
 	public SoaTrivia(IDiscordClient client) {
 		this.client = client;
 	}
 
+	/**
+	 * Execute trivia. This will start the trivia session and will periodically
+	 * check to make sure it still should be running. Upon completion, it will
+	 * export the answers to the triviamaster.
+	 */
 	@Override
 	public void run() {
 		SoaLogging.getLogger().info("Starting Trivia...");
 		initializeAnswersDoc();
 
 		try {
-			messageShoutbox("Its Trivia Time! Welcome to " + configuration.getTriviaName()
-					+ " \nThe forum thread for this event is: " + configuration.getForumUrl());
+			StringBuilder sb = new StringBuilder();
+			sb.append("Its Trivia Time! Welcome to " + configuration.getTriviaName());
+			if (configuration.getForumUrl() != null && !configuration.getForumUrl().isEmpty()) {
+				sb.append("\nThe forum thread for this event is: " + configuration.getForumUrl());
+			}
+			messageChannel(sb.toString());
 			Thread.sleep(3000);
 		} catch (InterruptedException e) {
+			this.triviaEnabled = false;
+			return;
 		}
 
 		Iterator<TriviaQuestion> questions = this.configuration.getQuestionBank().getTriviaQuestion().iterator();
 		question = questions.next();
-		messageShoutbox("Ready to play? " + answerFormat + question.getQuestion());
+		if (!this.isEnabled())
+			return;
+		messageChannel("Ready to play? " + answerFormat + question.getQuestion());
 
 		this.answersDoc.getAnswerBank().getTriviaQuestion()
 				.add(createQuestionAndAnswer(question.getQuestion(), question.getAnswer()));
@@ -56,12 +111,16 @@ public class SoaTrivia implements Runnable {
 		try {
 			while (this.triviaEnabled && questions.hasNext()) {
 				Thread.sleep((1000 * configuration.getWaitTime())); // time in seconds
-				messageShoutbox(timesUp + question.getAnswer());
+				if (!this.isEnabled())
+					return;
+				messageChannel(timesUp + question.getAnswer());
 
 				Thread.sleep(3000);
+				if (!this.isEnabled())
+					return;
 				if (questions.hasNext()) {
 					question = questions.next();
-					messageShoutbox("The next question is: " + question.getQuestion());
+					messageChannel("The next question is: " + question.getQuestion());
 					this.answersDoc.getAnswerBank().getTriviaQuestion()
 							.add(createQuestionAndAnswer(question.getQuestion(), question.getAnswer()));
 
@@ -70,11 +129,12 @@ public class SoaTrivia implements Runnable {
 
 			// Last question
 			Thread.sleep((1000 * configuration.getWaitTime())); // time in seconds
-			messageShoutbox(timesUp + question.getAnswer());
+			messageChannel(timesUp + question.getAnswer());
 
 		} catch (InterruptedException e) {
 			// Place killswitch here
 			this.triviaEnabled = false;
+			return;
 		}
 		try {
 			exportAnswersToTriviaMaster();
@@ -82,41 +142,81 @@ public class SoaTrivia implements Runnable {
 			SoaLogging.getLogger().error("Error exporting answers", e);
 		}
 		this.triviaEnabled = false;
-		// wrap-up things here
-		// shouldn't be needed any longer
 	}
 
-	private void messageShoutbox(String content) {
+	/**
+	 * Submit a message to the channel trivia is being played in
+	 * 
+	 * @param content
+	 */
+	private void messageChannel(String content) {
 		SoaClientHelper.sendMsgToChannel(this.client.getChannelByID(Long.parseLong(this.configuration.getChannelId())),
 				content);
 	}
 
+	/**
+	 * Toggle trivia as enabled or disabled
+	 * 
+	 * @param enable
+	 *            Whether trivia should be enabled or disabled
+	 */
 	public void enableTrivia(boolean enable) {
 		this.triviaEnabled = enable;
 	}
 
+	/**
+	 * Check if trivia is enabled
+	 * 
+	 * @return true if enabled, false if not
+	 */
 	public boolean isEnabled() {
 		return this.triviaEnabled;
 	}
 
+	/**
+	 * Set the trivia configuration to be used.
+	 * 
+	 * @param configuration
+	 *            the configuration to be used
+	 */
 	public void setConfiguration(TriviaConfiguration configuration) {
 		this.configuration = configuration;
 	}
 
+	/**
+	 * Get the trivia configuration
+	 * 
+	 * @return The trivia configuration
+	 */
 	public TriviaConfiguration getConfiguration() {
 		return this.configuration;
 	}
 
+	/**
+	 * Get the trivia master
+	 * 
+	 * @return The trivia master's ID
+	 */
 	public long getTriviaMaster() {
 		return this.triviaMaster;
 	}
 
+	/**
+	 * Set the trivia master
+	 * 
+	 * @param triviaMaster
+	 *            The trivia master's ID
+	 */
 	public void setTriviaMaster(long triviaMaster) {
 		this.triviaMaster = triviaMaster;
 	}
 
 	/*
 	 * For use in JUnit testing, this method should remain package private
+	 */
+
+	/**
+	 * Initialize the answers document
 	 */
 	void initializeAnswersDoc() {
 		this.answersDoc = new TriviaAnswers();
@@ -128,6 +228,15 @@ public class SoaTrivia implements Runnable {
 	 * For use in JUnit testing, this method should remain package private
 	 */
 
+	/**
+	 * Create a question and answer for use in the answers document
+	 * 
+	 * @param question
+	 *            The question text
+	 * @param answer
+	 *            The answer text
+	 * @return A trivia question object for the answers document
+	 */
 	Questions createQuestionAndAnswer(String question, String answer) {
 		Questions newQuestion = new Questions();
 		newQuestion.setQuestion(question);
@@ -136,6 +245,14 @@ public class SoaTrivia implements Runnable {
 		return newQuestion;
 	}
 
+	/**
+	 * Submits an answer to the answers document
+	 * 
+	 * @param user
+	 *            The user submitting the answer
+	 * @param answer
+	 *            The answer text
+	 */
 	public void submitAnswer(String user, String answer) {
 		Participant participant = new Participant();
 		participant.setParticipantName(user);
@@ -145,6 +262,12 @@ public class SoaTrivia implements Runnable {
 				.add(participant);
 	}
 
+	/**
+	 * Exports the trivia answers to the triviamaster.
+	 * 
+	 * @throws IOException
+	 *             If there is an error in writing to the stream
+	 */
 	public void exportAnswersToTriviaMaster() throws IOException {
 		TriviaAnswersStreamWriter writer = new TriviaAnswersStreamWriter();
 		InputStream dataStream = null;
@@ -163,6 +286,10 @@ public class SoaTrivia implements Runnable {
 
 	}
 
+	/**
+	 * Cleanup trivia; nulls out necessary values to prepare for another trivia
+	 * session.
+	 */
 	public void cleanupTrivia() {
 		this.triviaMaster = -1;
 		this.configuration = null;
@@ -176,10 +303,21 @@ public class SoaTrivia implements Runnable {
 	 * testing; package private
 	 */
 
+	/**
+	 * Get the answer doc
+	 * 
+	 * @return The answer doc
+	 */
 	TriviaAnswers getAnswersDoc() {
 		return answersDoc;
 	}
 
+	/**
+	 * Set the answer doc
+	 * 
+	 * @param answersDoc
+	 *            The answer doc
+	 */
 	void setAnswersDoc(TriviaAnswers answersDoc) {
 		this.answersDoc = answersDoc;
 	}

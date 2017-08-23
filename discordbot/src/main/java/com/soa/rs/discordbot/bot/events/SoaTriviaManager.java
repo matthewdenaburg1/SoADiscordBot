@@ -12,6 +12,8 @@ import com.soa.rs.discordbot.util.NoSuchServerException;
 import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 import com.soa.rs.triviacreator.jaxb.TriviaConfiguration;
+import com.soa.rs.triviacreator.jaxb.TriviaQuestion;
+import com.soa.rs.triviacreator.util.InvalidConfigurationException;
 import com.soa.rs.triviacreator.util.TriviaFileReader;
 
 import sx.blah.discord.api.IDiscordClient;
@@ -21,17 +23,71 @@ import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.PermissionUtils;
 
+/**
+ * The <tt>SoaTriviaManager</tt> class handles the management of the trivia
+ * system through the commands issued by the user from Discord. It is
+ * responsible for the loading of the Trivia configuration file, starting and
+ * stopping trivia, recording answers from the participants, and exporting the
+ * answers in XML format back to the trivia master.
+ * <p>
+ * The actual execution of the Trivia thread is not handled here. The
+ * <tt>SoaTrivia</tt> class is responsible for that.
+ */
 public class SoaTriviaManager {
 
+	/**
+	 * The object representing the trivia session.
+	 */
 	private SoaTrivia trivia = null;
+
+	/**
+	 * Used to hold the most recently received message.
+	 */
 	private IMessage msg;
+
+	/**
+	 * The thread executing the trivia session. Note that <tt>SoaTrivia</tt> is the
+	 * class implementing the <tt>Runnable</tt> interface.
+	 */
 	private Thread triviaThread;
+
+	/**
+	 * The thread managing trivia cleanup after a trivia session has ended. Trivia
+	 * cleanup must be delayed to ensure answers are appropriately exported off and
+	 * retrieved before they are lost.
+	 */
 	private Thread cleanupThread;
 
+	/**
+	 * Set the message received for use by the manager
+	 * 
+	 * @param msg
+	 *            Message received by the bot from the user.
+	 */
 	public void setMsg(IMessage msg) {
 		this.msg = msg;
 	}
 
+	/**
+	 * Handles the processing of commands from the user. The following commands are
+	 * valid:
+	 * <ul>
+	 * <li>Help: Will display a help menu with the available trivia commands.</li>
+	 * <li>Config: Should be accompanied with an uploaded XML file containing the
+	 * trivia configuration. Will validate and set up the trivia instance with a
+	 * valid configuration to be used.</li>
+	 * <li>Start: Starts the trivia thread</li>
+	 * <li>Stop: Stops the trivia thread</li>
+	 * <li>Export: Will export the current Trivia answers to the trivia master.</li>
+	 * <li>Reset: Will stop the currently running trivia instance if one is running,
+	 * and will immediately reset the system so another trivia session can be
+	 * started.</li>
+	 * <li>Answer: Will record an answer provided by the user if trivia is currently
+	 * running.
+	 * 
+	 * @param args
+	 *            The arguments provided with the message, minus the word "trivia"
+	 */
 	public void executeCmd(String[] args) {
 		if (args[1].equalsIgnoreCase("help")) {
 			// insert some call to a help function here
@@ -77,6 +133,12 @@ public class SoaTriviaManager {
 
 	}
 
+	/**
+	 * Loads the provided configuration. If the configuration is not provided or is
+	 * invalid, an error will be returned. If the configuration is inadvertantly
+	 * placed in a public channel, the bot will try and delete it from that channel
+	 * after it has read it.
+	 */
 	private void loadTriviaConfiguration() {
 		if (!msg.getAttachments().isEmpty()) {
 			try {
@@ -85,6 +147,7 @@ public class SoaTriviaManager {
 				TriviaFileReader reader = new TriviaFileReader();
 
 				TriviaConfiguration configuration = reader.loadTriviaConfigFromURL(url);
+				validateConfiguration(configuration);
 				if (this.trivia == null) {
 					this.trivia = new SoaTrivia(msg.getClient());
 				}
@@ -108,6 +171,10 @@ public class SoaTriviaManager {
 				SoaLogging.getLogger().error("Error executing configuration: ", e);
 				SoaClientHelper.sendMsgToChannel(msg.getChannel(),
 						"An error occurred initializing trivia: " + e.getMessage());
+			} catch (InvalidConfigurationException e) {
+				SoaLogging.getLogger().error("Configuration provided was not valid", e);
+				SoaClientHelper.sendMsgToChannel(msg.getChannel(),
+						"The configuration provided could not be validated: " + e.getMessage());
 			}
 
 			if (!msg.getChannel().isPrivate()) {
@@ -125,6 +192,67 @@ public class SoaTriviaManager {
 		}
 	}
 
+	/**
+	 * Validate that the configuration provided has all fields appropriately
+	 * validated so that Trivia can run successfully.
+	 * 
+	 * @param configuration
+	 *            The Trivia Configuration uploaded to the Discord bot.
+	 * @throws InvalidConfigurationException
+	 *             If the configuration is for some reason not valid.
+	 */
+	void validateConfiguration(TriviaConfiguration configuration) throws InvalidConfigurationException {
+		if (configuration.getTriviaName() == null || configuration.getTriviaName().isEmpty()) {
+			throw new InvalidConfigurationException(
+					"The server name field is required, and is empty in the provided configuration");
+		}
+		if (configuration.getServerId() == null || configuration.getServerId().isEmpty()) {
+			throw new InvalidConfigurationException(
+					"The server id field is required, and is empty in the provided configuration");
+		}
+		try {
+			Long.parseLong(configuration.getServerId());
+		} catch (NumberFormatException ex) {
+			throw new InvalidConfigurationException(
+					"The server id field is not valid (should be a long, but could not be parsed as a long)");
+		}
+		if (configuration.getChannelId() == null || configuration.getChannelId().isEmpty()) {
+			throw new InvalidConfigurationException(
+					"The channel id field is required, and is empty in the provided configuration");
+		}
+		try {
+			Long.parseLong(configuration.getChannelId());
+		} catch (NumberFormatException ex) {
+			throw new InvalidConfigurationException(
+					"The channel id field is not valid (should be a long, but could not be parsed as a long)");
+		}
+		if (configuration.getWaitTime() <= 0) {
+			throw new InvalidConfigurationException("The wait time cannot be less than 1");
+		}
+		for (TriviaQuestion question : configuration.getQuestionBank().getTriviaQuestion()) {
+			if (question.getQuestion() == null || question.getQuestion().isEmpty()) {
+				throw new InvalidConfigurationException(
+						"One of the Trivia Questions provided has no text in the question field.");
+			}
+			if (question.getAnswer() == null || question.getAnswer().isEmpty()) {
+				throw new InvalidConfigurationException(
+						"One of the Trivia Questions provided has no text in the answer field.");
+			}
+		}
+
+	}
+
+	/**
+	 * Checks if the server is one that the bot is currently connected to.
+	 * 
+	 * @param configuration
+	 *            The Trivia Configuration uploaded to the Discord bot.
+	 * @param client
+	 *            The Discord Client object for the bot.
+	 * @return true if the bot is connected to the provided server
+	 * @throws NoSuchServerException
+	 *             if the bot is not connected to the provided server
+	 */
 	private boolean checkIfServerExists(TriviaConfiguration configuration, IDiscordClient client)
 			throws NoSuchServerException {
 		List<IGuild> guilds = client.getGuilds();
@@ -138,8 +266,11 @@ public class SoaTriviaManager {
 		throw new NoSuchServerException("The bot is not a member of the specified server.");
 	}
 
+	/**
+	 * Starts the trivia thread
+	 */
 	private void startTrivia() {
-		if (this.trivia != null) {
+		if (this.trivia != null && this.trivia.getConfiguration() != null) {
 			if (this.trivia.isEnabled()) {
 				SoaClientHelper.sendMsgToChannel(this.msg.getChannel(), "Trivia is already running!");
 				return;
@@ -163,11 +294,15 @@ public class SoaTriviaManager {
 		}
 	}
 
+	/**
+	 * Stops the trivia thread
+	 */
 	private void stopTrivia() {
 		if (this.trivia != null) {
 			if (isTriviaMaster(this.msg) && this.trivia.isEnabled()) {
 				this.trivia.enableTrivia(false);
 				this.triviaThread.interrupt();
+				SoaClientHelper.sendMsgToChannel(this.msg.getChannel(), "Trivia has been stopped.");
 			} else {
 				SoaClientHelper.sendMsgToChannel(this.msg.getChannel(),
 						"Only the Trivia Master can stop a trivia round.");
@@ -176,6 +311,12 @@ public class SoaTriviaManager {
 
 	}
 
+	/**
+	 * Records an answer submitted by a participant
+	 * 
+	 * @param answer
+	 *            The answer submitted by the participant
+	 */
 	private void recordAnswer(String answer) {
 		if (this.trivia != null) {
 			if (this.trivia.isEnabled()) {
@@ -195,14 +336,21 @@ public class SoaTriviaManager {
 								.getDisplayName(msg.getGuild())
 								+ ", I got your answer but please PM future answers so others don't see!  I can't delete your message, so please delete it so others don't see!");
 					}
+				} else {
+					SoaClientHelper.sendMsgToChannel(msg.getChannel(),
+							"Message recorded, " + msg.getAuthor().getDisplayName(this.msg.getClient()
+									.getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId()))));
 				}
 			}
 		}
 	}
 
+	/**
+	 * Exports the answers in an XML document to the triviamaster.
+	 */
 	private void exportAnswers() {
 		if (this.trivia != null) {
-			if (isTriviaMaster(this.msg) && this.trivia.isEnabled())
+			if (isTriviaMaster(this.msg) && this.cleanupThread != null && this.cleanupThread.isAlive()) {
 				try {
 					this.trivia.exportAnswersToTriviaMaster();
 				} catch (IOException e) {
@@ -210,9 +358,10 @@ public class SoaTriviaManager {
 							"Error exporting answers: " + e.getMessage());
 					SoaLogging.getLogger().error("Error exporting answers", e);
 				}
-		} else {
-			SoaClientHelper.sendMsgToChannel(this.msg.getChannel(),
-					"Either Trivia is not currently enabled or you are not the Trivia Master and therefore are not permitted to receive the answers.");
+			} else {
+				SoaClientHelper.sendMsgToChannel(this.msg.getChannel(),
+						"Either Trivia is not currently enabled or you are not the Trivia Master and therefore are not permitted to receive the answers.");
+			}
 		}
 	}
 
@@ -232,6 +381,12 @@ public class SoaTriviaManager {
 	// this.trivia.notify();
 	// }
 
+	/**
+	 * An automated task to cleanup the trivia configuration and various other
+	 * items. This will happen 15 minutes after a trivia session has completed,
+	 * allowing time for the triviamaster to retrieve answers if for some reason
+	 * they failed to be provided at the end of the session.
+	 */
 	private void cleanupTask() {
 		cleanupThread = new Thread(new Runnable() {
 
@@ -243,19 +398,20 @@ public class SoaTriviaManager {
 					// Sleep 15 minutes
 					Thread.sleep(1000 * 60 * 15);
 					trivia.cleanupTrivia();
-
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
 			}
-
 		});
 
 		cleanupThread.start();
 	}
 
+	/**
+	 * Resets the trivia system. This sets all major configuration parameters back
+	 * to null values.
+	 */
 	private void resetTriviaSystem() {
 		if (isStaff(msg)) {
 			if (this.trivia != null) {
@@ -270,10 +426,20 @@ public class SoaTriviaManager {
 					}
 				}
 				this.trivia.cleanupTrivia();
+				SoaClientHelper.sendMsgToChannel(msg.getChannel(), "Trivia has been reset");
 			}
 		}
 	}
 
+	/**
+	 * Checks if the user is the trivia master (the person who uploaded the trivia
+	 * configuration)
+	 * 
+	 * @param msg
+	 *            The message submitted to the Discord bot.
+	 * @return True if the user is the triviamaster or a member of staff, false if
+	 *         not.
+	 */
 	private boolean isTriviaMaster(IMessage msg) {
 		if (msg.getAuthor().getLongID() == this.trivia.getTriviaMaster())
 			return true;
@@ -283,8 +449,20 @@ public class SoaTriviaManager {
 			return false;
 	}
 
+	/**
+	 * Checks if the user is a member of staff for the server or not. If not
+	 * configured at bot startup, the standard SoA ranks (Eldar, Lian, Arquendi) are
+	 * provided.
+	 * 
+	 * @param msg
+	 *            The message submitted to the Discord bot.
+	 * @return True if the member is staff, false if not.
+	 */
 	private boolean isStaff(IMessage msg) {
 		String[] mustHavePermission = new String[] { "Eldar", "Lian", "Arquendi" };
+		if (this.trivia.getConfiguration() == null) {
+			return false;
+		}
 		List<IRole> roleListing = new LinkedList<IRole>(msg.getAuthor().getRolesForGuild(
 				msg.getClient().getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId()))));
 		Iterator<IRole> roleIterator = roleListing.iterator();
