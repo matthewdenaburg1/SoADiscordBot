@@ -46,6 +46,11 @@ public class SoaTrivia implements Runnable {
 	private boolean triviaEnabled = false;
 
 	/**
+	 * Boolean detailing whether trivia currently is paused or not.
+	 */
+	private boolean triviaPaused = false;
+
+	/**
 	 * The trivia configuration to be used
 	 */
 	private TriviaConfiguration configuration;
@@ -110,13 +115,15 @@ public class SoaTrivia implements Runnable {
 
 		try {
 			while (this.triviaEnabled && questions.hasNext()) {
-				Thread.sleep((1000 * configuration.getWaitTime())); // time in seconds
-				if (!this.isEnabled())
-					return;
+				for (int i = 0; i < configuration.getWaitTime(); i++) {
+					Thread.sleep(1000); // time in seconds
+					if (!checkStatus())
+						return;
+				}
 				messageChannel(timesUp + question.getAnswer());
 
 				Thread.sleep(3000);
-				if (!this.isEnabled())
+				if (!!checkStatus())
 					return;
 				if (questions.hasNext()) {
 					question = questions.next();
@@ -128,7 +135,11 @@ public class SoaTrivia implements Runnable {
 			}
 
 			// Last question
-			Thread.sleep((1000 * configuration.getWaitTime())); // time in seconds
+			for (int i = 0; i < configuration.getWaitTime(); i++) {
+				Thread.sleep(1000); // time in seconds
+				if (!checkStatus())
+					return;
+			}
 			messageChannel(timesUp + question.getAnswer());
 
 		} catch (InterruptedException e) {
@@ -142,6 +153,27 @@ public class SoaTrivia implements Runnable {
 			SoaLogging.getLogger().error("Error exporting answers", e);
 		}
 		this.triviaEnabled = false;
+	}
+
+	/**
+	 * Check if the thread is currently
+	 * 
+	 * @return true if trivia is still enabled, false if not.
+	 * @throws InterruptedException
+	 *             if the thread has been stopped while paused. This interrupted
+	 *             exception should be caught in the run method and used to stop the
+	 *             thread, as it means trivia is no longer enabled.
+	 */
+	private boolean checkStatus() throws InterruptedException {
+		if (isTriviaPaused()) {
+			while (isTriviaPaused()) {
+				Thread.sleep(1000);
+			}
+		}
+		if (!isEnabled())
+			return false;
+		else
+			return true;
 	}
 
 	/**
@@ -171,6 +203,26 @@ public class SoaTrivia implements Runnable {
 	 */
 	public boolean isEnabled() {
 		return this.triviaEnabled;
+	}
+
+	/**
+	 * Check if trivia is paused
+	 * 
+	 * @return true if paused, false if not
+	 */
+	public boolean isTriviaPaused() {
+		return triviaPaused;
+	}
+
+	/**
+	 * Set if trivia is paused
+	 * 
+	 * @param triviaPaused
+	 *            Whether trivia should be paused or not. True indicates trivia
+	 *            should be paused.
+	 */
+	public void setTriviaPaused(boolean triviaPaused) {
+		this.triviaPaused = triviaPaused;
 	}
 
 	/**

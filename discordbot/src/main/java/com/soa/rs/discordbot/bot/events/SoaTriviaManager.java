@@ -90,7 +90,7 @@ public class SoaTriviaManager {
 	 */
 	public void executeCmd(String[] args) {
 		if (args[1].equalsIgnoreCase("help")) {
-			// insert some call to a help function here
+			triviaHelp();
 		}
 		if (msg.getChannel().isPrivate()) {
 
@@ -106,12 +106,11 @@ public class SoaTriviaManager {
 				resetTriviaSystem();
 			} else if (args[1].equalsIgnoreCase("answer")) {
 				recordAnswer(msg.getContent());
+			} else if (args[1].equalsIgnoreCase("pause")) {
+				pauseTrivia();
+			} else if (args[1].equalsIgnoreCase("resume")) {
+				resumeTrivia();
 			}
-			// else if (args[1].equalsIgnoreCase("pause")) {
-			// pauseTrivia();
-			// } else if (args[1].equalsIgnoreCase("resume")) {
-			// resumeTrivia();
-			// }
 		}
 
 		else {
@@ -127,9 +126,39 @@ public class SoaTriviaManager {
 				recordAnswer(msg.getContent());
 			} else if (args[1].equalsIgnoreCase("config")) {
 				loadTriviaConfiguration();
+			} else if (args[1].equalsIgnoreCase("pause")) {
+				pauseTrivia();
+			} else if (args[1].equalsIgnoreCase("resume")) {
+				resumeTrivia();
 			} else
 				SoaClientHelper.sendMsgToChannel(msg.getChannel(), "Trivia Commands should be sent via Private Chat!");
 		}
+
+	}
+
+	/**
+	 * Prints out the command listing for the Trivia module.
+	 */
+	private void triviaHelp() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("```Help: Trivia (command: .trivia [args])\n");
+		sb.append("Note - Trivia commands should be sent privately through private chat to the bot\n\n");
+		sb.append(".trivia help - Bot displays this menu.");
+		sb.append(".trivia answer - Submits an answer to the currently asked Trivia Question.\n");
+		sb.append(
+				".trivia config - Should be used in a file upload, uploads a configuration file to configure trivia.  The uploader will be assigned to be the \"Trivia Master\" if successful.\n");
+		sb.append(
+				"\nNote - The rest of the commands in this menu can only be executed by the current Trivia Master or a member of staff\n");
+		sb.append(".trivia start - Starts a round of trivia if one has been successfully configured\n");
+		sb.append(".trivia stop - Immediately ends the currently running instance of trivia\n");
+		sb.append(
+				".trivia pause & .trivia resume - Pauses or resumes trivia.  Answers can still be collected while paused.\n");
+		sb.append(
+				".trivia export - Exports the current set of collected answers as an XML document.  This document will also be exported automatically when trivia finishes.\n");
+		sb.append(
+				".trivia reset - This command immediately resets the trivia instance so that a new round can be uploaded and run.  This includes bypassing the 15 minute cooldown period between rounds.");
+		sb.append("```");
+		SoaClientHelper.sendMsgToChannel(msg.getChannel(), sb.toString());
 
 	}
 
@@ -323,6 +352,11 @@ public class SoaTriviaManager {
 				String displayName = msg.getAuthor().getDisplayName(
 						msg.getClient().getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId())));
 				answer = answer.replace(".trivia answer ", "");
+				if (answer.trim().length() == 0) {
+					SoaClientHelper.sendMsgToChannel(msg.getChannel(),
+							"The answer provided was empty; no answer recorded");
+					return;
+				}
 				this.trivia.submitAnswer(displayName, answer);
 				if (!msg.getChannel().isPrivate()) {
 					if (PermissionUtils.hasPermissions(msg.getChannel(), msg.getClient().getOurUser(),
@@ -362,24 +396,25 @@ public class SoaTriviaManager {
 				SoaClientHelper.sendMsgToChannel(this.msg.getChannel(),
 						"Either Trivia is not currently enabled or you are not the Trivia Master and therefore are not permitted to receive the answers.");
 			}
+		} else {
+			SoaClientHelper.sendMsgToChannel(this.msg.getChannel(),
+					"Either Trivia is not currently enabled or you are not the Trivia Master and therefore are not permitted to receive the answers.");
 		}
 	}
 
-	/*
-	 * These probably won't work based on this setup
+	/**
+	 * Pauses trivia
 	 */
-	// private void pauseTrivia() {
-	// try {
-	// this.triviaThread.wait();
-	// } catch (InterruptedException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// }
-	//
-	// private void resumeTrivia() {
-	// this.trivia.notify();
-	// }
+	private void pauseTrivia() {
+		this.trivia.setTriviaPaused(true);
+	}
+
+	/**
+	 * Resumes trivia if it is paused
+	 */
+	private void resumeTrivia() {
+		this.trivia.setTriviaPaused(false);
+	}
 
 	/**
 	 * An automated task to cleanup the trivia configuration and various other
