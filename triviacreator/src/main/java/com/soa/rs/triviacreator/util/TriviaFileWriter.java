@@ -2,10 +2,15 @@ package com.soa.rs.triviacreator.util;
 
 import java.io.File;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+
+import org.xml.sax.SAXException;
 
 import com.soa.rs.triviacreator.jaxb.ObjectFactory;
 import com.soa.rs.triviacreator.jaxb.TriviaConfiguration;
@@ -27,14 +32,21 @@ public class TriviaFileWriter {
 	 *            The path to where the XML file will be stored
 	 * @throws JAXBException
 	 *             If they file cannot be written due to an error
+	 * @throws SAXException
+	 *             If Schema validation fails
 	 */
-	public void writeTriviaConfigFile(TriviaConfiguration cfg, String filename) throws JAXBException {
+	public void writeTriviaConfigFile(TriviaConfiguration cfg, String filename) throws JAXBException, SAXException {
 		File file = new File(filename);
 		JAXBContext jaxbContext = JAXBContext.newInstance("com.soa.rs.triviacreator.jaxb");
+
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(this.getClass().getResource("/xsd/trivia.xsd"));
+
 		Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
 		// output pretty printed
 		jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		jaxbMarshaller.setSchema(schema);
 
 		JAXBElement<TriviaConfiguration> element = objectFactory.createTriviaConfiguration(cfg);
 

@@ -2,6 +2,8 @@ package com.soa.rs.discordbot.bot;
 
 import javax.xml.bind.JAXBException;
 
+import org.xml.sax.SAXException;
+
 import com.soa.rs.discordbot.cfg.ConfigWriter;
 import com.soa.rs.discordbot.cfg.DiscordCfg;
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
@@ -102,7 +104,7 @@ public class ConfigureBot {
 	private void loadCfg(String cfg) {
 		try {
 			DiscordCfg.getInstance().loadFromFile(cfg);
-		} catch (JAXBException e) {
+		} catch (JAXBException | SAXException e) {
 			SoaLogging.getLogger().error("Error loading configuration from xml file", e);
 		}
 
@@ -123,7 +125,7 @@ public class ConfigureBot {
 			ConfigWriter writer = new ConfigWriter();
 			try {
 				writer.writeConfig(dsc, cfg);
-			} catch (JAXBException e) {
+			} catch (JAXBException | SAXException e) {
 				SoaLogging.getLogger().error("Error writing configuration to xml file", e);
 			}
 		} else {

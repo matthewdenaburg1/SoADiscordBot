@@ -6,10 +6,15 @@ import java.io.InputStream;
 import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+
+import org.xml.sax.SAXException;
 
 import com.soa.rs.triviacreator.jaxb.TriviaConfiguration;
 
@@ -30,14 +35,20 @@ public class TriviaFileReader {
 	 * @return The Trivia configuration to be used
 	 * @throws JAXBException
 	 *             If the file cannot be successfully loaded due to an error.
+	 * @throws SAXException
+	 *             If the file cannot be schema validated.
 	 */
-	public TriviaConfiguration loadTriviaConfigFile(String filename) throws JAXBException {
+	public TriviaConfiguration loadTriviaConfigFile(String filename) throws JAXBException, SAXException {
 		TriviaConfiguration config = null;
 
 		File file = new File(filename);
 		JAXBContext jaxbContext = JAXBContext.newInstance("com.soa.rs.triviacreator.jaxb");
 
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(this.getClass().getResource("/xsd/trivia.xsd"));
+
 		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+		jaxbUnmarshaller.setSchema(schema);
 
 		JAXBElement<?> jaxbElement = (JAXBElement<?>) jaxbUnmarshaller.unmarshal(file);
 		config = (TriviaConfiguration) jaxbElement.getValue();
@@ -56,12 +67,18 @@ public class TriviaFileReader {
 	 *             If the file cannot be successfully loaded due to an error.
 	 * @throws IOException
 	 *             If there is an error reading to the stream.
+	 * @throws SAXException
+	 *             If the file cannot be schema validated.
 	 */
-	public TriviaConfiguration loadTriviaConfigFromURL(URL url) throws JAXBException, IOException {
+	public TriviaConfiguration loadTriviaConfigFromURL(URL url) throws JAXBException, IOException, SAXException {
 		TriviaConfiguration config = null;
 		JAXBContext jaxbContext = JAXBContext.newInstance("com.soa.rs.triviacreator.jaxb");
 
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(this.getClass().getResource("/xsd/trivia.xsd"));
+
 		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+		jaxbUnmarshaller.setSchema(schema);
 
 		HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
 		connection.setRequestMethod("GET");

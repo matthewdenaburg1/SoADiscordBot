@@ -40,6 +40,27 @@ public class SoaClientHelper {
 	}
 
 	/**
+	 * Sends a message to a user
+	 * 
+	 * @param userId
+	 *            The user's Discord ID as a Long
+	 * @param client
+	 *            The client object which represents the bot
+	 * @param msg
+	 *            The message to send to the channel
+	 */
+	public static void sendMessageToUser(Long userId, IDiscordClient client, String msg) {
+		RequestBuffer.request(() -> {
+			try {
+				IUser user = client.getUserByID(userId);
+				user.getOrCreatePMChannel().sendMessage(msg);
+			} catch (MissingPermissionsException | DiscordException e) {
+				SoaLogging.getLogger().error("Error sending message: " + e.getMessage(), e);
+			}
+		});
+	}
+
+	/**
 	 * Sends a message and a file to a channel
 	 * 
 	 * @param channel

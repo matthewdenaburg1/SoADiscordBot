@@ -5,6 +5,8 @@ import java.util.Date;
 
 import javax.xml.bind.JAXBException;
 
+import org.xml.sax.SAXException;
+
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
 import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 import com.soa.rs.discordbot.util.SoaLogging;
@@ -69,8 +71,9 @@ public class DiscordCfg {
 	 * @param filename
 	 *            the path to the configuration file
 	 * @throws JAXBException
+	 * @throws SAXException 
 	 */
-	public void loadFromFile(String filename) throws JAXBException {
+	public void loadFromFile(String filename) throws JAXBException, SAXException {
 		ConfigReader reader = new ConfigReader();
 		DiscordConfiguration cfg = reader.loadAppConfig(filename);
 		loadFromDiscordConfiguration(cfg);

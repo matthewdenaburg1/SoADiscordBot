@@ -60,6 +60,12 @@
  
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
+    <resources>
+      <resource>
+        <targetPath>xsd</targetPath>
+        <directory>src/main/xsd</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

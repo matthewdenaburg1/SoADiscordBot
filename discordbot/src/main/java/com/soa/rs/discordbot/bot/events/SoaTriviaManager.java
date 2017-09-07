@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
+import org.xml.sax.SAXException;
+
 import com.soa.rs.discordbot.util.NoSuchServerException;
 import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
@@ -83,7 +85,13 @@ public class SoaTriviaManager {
 	 * and will immediately reset the system so another trivia session can be
 	 * started.</li>
 	 * <li>Answer: Will record an answer provided by the user if trivia is currently
-	 * running.
+	 * running.</li>
+	 * <li>Pause: Will pause the currently running Trivia thread. Upon resume, the
+	 * thread will continue to wait however much time was still left for the
+	 * question before it was paused.</li>
+	 * <li>Resume: Will resume the currently running Trivia thread, waiting however
+	 * much time was still left before asking the next question.</li>
+	 * </ul>
 	 * 
 	 * @param args
 	 *            The arguments provided with the message, minus the word "trivia"
@@ -111,9 +119,7 @@ public class SoaTriviaManager {
 			} else if (args[1].equalsIgnoreCase("resume")) {
 				resumeTrivia();
 			}
-		}
-
-		else {
+		} else {
 
 			/*
 			 * While trivia commands should be sent via PM, these two will be checked in the
@@ -164,7 +170,7 @@ public class SoaTriviaManager {
 
 	/**
 	 * Loads the provided configuration. If the configuration is not provided or is
-	 * invalid, an error will be returned. If the configuration is inadvertantly
+	 * invalid, an error will be returned. If the configuration is inadvertently
 	 * placed in a public channel, the bot will try and delete it from that channel
 	 * after it has read it.
 	 */
@@ -186,16 +192,26 @@ public class SoaTriviaManager {
 						this.trivia.setTriviaMaster(msg.getAuthor().getLongID());
 						SoaClientHelper.sendMsgToChannel(msg.getChannel(),
 								"Trivia File loaded & you are the Trivia Master.  Run ``.trivia start`` to begin.");
+						SoaLogging.getLogger()
+								.info(msg.getAuthor().getDisplayName(
+										msg.getClient().getGuildByID(Long.parseLong(configuration.getServerId())))
+										+ " uploaded a Trivia Configuration and is now the Trivia Master");
 					}
 				} else {
 					SoaClientHelper.sendMsgToChannel(msg.getChannel(),
 							"Trivia is either in progress or it has not been 15 minutes since Trivia last ended.  Try again later");
 				}
 
-			} catch (JAXBException | IOException e) {
+			} catch (JAXBException | SAXException | IOException e) {
 				SoaLogging.getLogger().error("Error loading trivia configuration file", e);
+				String errormsg;
+				if (e.getCause() != null) {
+					errormsg = e.getCause().getMessage();
+				} else {
+					errormsg = e.getMessage();
+				}
 				SoaClientHelper.sendMsgToChannel(msg.getChannel(),
-						"An error was encountered when loading the provided file: " + e.getMessage());
+						"An error was encountered when loading the provided file: " + errormsg);
 			} catch (NoSuchServerException e) {
 				SoaLogging.getLogger().error("Error executing configuration: ", e);
 				SoaClientHelper.sendMsgToChannel(msg.getChannel(),
@@ -223,7 +239,9 @@ public class SoaTriviaManager {
 
 	/**
 	 * Validate that the configuration provided has all fields appropriately
-	 * validated so that Trivia can run successfully.
+	 * validated so that Trivia can run successfully. Any configuration that has
+	 * gotten to this point has already passed XML Schema validation, so this is
+	 * checking to make sure the values entered make sense for use.
 	 * 
 	 * @param configuration
 	 *            The Trivia Configuration uploaded to the Discord bot.
@@ -332,6 +350,7 @@ public class SoaTriviaManager {
 				this.trivia.enableTrivia(false);
 				this.triviaThread.interrupt();
 				SoaClientHelper.sendMsgToChannel(this.msg.getChannel(), "Trivia has been stopped.");
+				SoaLogging.getLogger().info("Trivia has been stopped");
 			} else {
 				SoaClientHelper.sendMsgToChannel(this.msg.getChannel(),
 						"Only the Trivia Master can stop a trivia round.");
@@ -351,13 +370,13 @@ public class SoaTriviaManager {
 			if (this.trivia.isEnabled()) {
 				String displayName = msg.getAuthor().getDisplayName(
 						msg.getClient().getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId())));
-				answer = answer.replace(".trivia answer ", "");
-				if (answer.trim().length() == 0) {
+				answer = answer.replace(".trivia answer", "");
+				if (answer.trim().length() == 0 || answer.equals("")) {
 					SoaClientHelper.sendMsgToChannel(msg.getChannel(),
 							"The answer provided was empty; no answer recorded");
 					return;
 				}
-				this.trivia.submitAnswer(displayName, answer);
+				this.trivia.submitAnswer(displayName, answer.trim());
 				if (!msg.getChannel().isPrivate()) {
 					if (PermissionUtils.hasPermissions(msg.getChannel(), msg.getClient().getOurUser(),
 							Permissions.MANAGE_MESSAGES)) {
@@ -365,15 +384,21 @@ public class SoaTriviaManager {
 						SoaClientHelper.sendMsgToChannel(msg.getChannel(), msg.getAuthor()
 								.getDisplayName(msg.getGuild())
 								+ ", I got your answer but please PM future answers so others don't see!  I deleted the answer from here");
+						SoaLogging.getLogger().info("Recorded answer from " + msg.getAuthor().getDisplayName(this.msg
+								.getClient().getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId()))) + " and deleted their message.");
 					} else {
 						SoaClientHelper.sendMsgToChannel(msg.getChannel(), msg.getAuthor()
 								.getDisplayName(msg.getGuild())
 								+ ", I got your answer but please PM future answers so others don't see!  I can't delete your message, so please delete it so others don't see!");
+						SoaLogging.getLogger().info("Recorded answer from " + msg.getAuthor().getDisplayName(this.msg
+								.getClient().getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId()))) + " but was unable to delete their message in the server.");
 					}
 				} else {
 					SoaClientHelper.sendMsgToChannel(msg.getChannel(),
-							"Message recorded, " + msg.getAuthor().getDisplayName(this.msg.getClient()
+							"Answer recorded, " + msg.getAuthor().getDisplayName(this.msg.getClient()
 									.getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId()))));
+					SoaLogging.getLogger().info("Recorded answer from " + msg.getAuthor().getDisplayName(this.msg
+							.getClient().getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId()))));
 				}
 			}
 		}
@@ -387,6 +412,7 @@ public class SoaTriviaManager {
 			if (isTriviaMaster(this.msg) && this.cleanupThread != null && this.cleanupThread.isAlive()) {
 				try {
 					this.trivia.exportAnswersToTriviaMaster();
+					SoaLogging.getLogger().info("Exported answers to triviamaster.");
 				} catch (IOException e) {
 					SoaClientHelper.sendMsgToChannel(this.msg.getChannel(),
 							"Error exporting answers: " + e.getMessage());
@@ -407,6 +433,8 @@ public class SoaTriviaManager {
 	 */
 	private void pauseTrivia() {
 		this.trivia.setTriviaPaused(true);
+		SoaClientHelper.sendMsgToChannel(this.msg.getChannel(), "Trivia has been paused.");
+		SoaLogging.getLogger().info("Trivia has been paused.");
 	}
 
 	/**
@@ -414,6 +442,8 @@ public class SoaTriviaManager {
 	 */
 	private void resumeTrivia() {
 		this.trivia.setTriviaPaused(false);
+		SoaClientHelper.sendMsgToChannel(this.msg.getChannel(), "Trivia has been resumed.");
+		SoaLogging.getLogger().info("Trivia has been resumed.");
 	}
 
 	/**
@@ -433,9 +463,9 @@ public class SoaTriviaManager {
 					// Sleep 15 minutes
 					Thread.sleep(1000 * 60 * 15);
 					trivia.cleanupTrivia();
+					SoaLogging.getLogger().info("Trivia cleanup has occurred");
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					SoaLogging.getLogger().info("Trivia Cleanup thread has been interrupted");
 				}
 			}
 		});
@@ -462,6 +492,7 @@ public class SoaTriviaManager {
 				}
 				this.trivia.cleanupTrivia();
 				SoaClientHelper.sendMsgToChannel(msg.getChannel(), "Trivia has been reset");
+				SoaLogging.getLogger().info("Trivia has been reset");
 			}
 		}
 	}

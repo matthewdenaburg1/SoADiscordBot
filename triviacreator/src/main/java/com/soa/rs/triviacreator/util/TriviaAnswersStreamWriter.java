@@ -5,10 +5,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+
+import org.xml.sax.SAXException;
 
 import com.soa.rs.triviacreator.jaxb.ObjectFactory;
 import com.soa.rs.triviacreator.jaxb.TriviaAnswers;
@@ -35,11 +40,19 @@ public class TriviaAnswersStreamWriter {
 	 * @throws IOException
 	 *             If there is an issue with writing to or reading from the data
 	 *             streams
+	 * @throws SAXException
+	 *             If the schema could not be validated
 	 */
-	public InputStream writeTriviaAnswersToStream(TriviaAnswers answers) throws JAXBException, IOException {
+	public InputStream writeTriviaAnswersToStream(TriviaAnswers answers)
+			throws JAXBException, IOException, SAXException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		JAXBContext jaxbContext = JAXBContext.newInstance("com.soa.rs.triviacreator.jaxb");
+
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(this.getClass().getResource("/xsd/triviaAnswers.xsd"));
+
 		Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+		jaxbMarshaller.setSchema(schema);
 
 		// output pretty printed
 		jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);

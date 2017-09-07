@@ -7,6 +7,7 @@ import javax.xml.bind.JAXBException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
 
@@ -43,7 +44,7 @@ public class DiscordCfgTest {
 		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
 		try {
 			mockDiscordCfg.loadFromFile(this.getClass().getResource("/config-test.xml").getPath());
-		} catch (JAXBException e) {
+		} catch (JAXBException | SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

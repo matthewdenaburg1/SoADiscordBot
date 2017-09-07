@@ -6,6 +6,8 @@ import java.util.Iterator;
 
 import javax.xml.bind.JAXBException;
 
+import org.xml.sax.SAXException;
+
 import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 import com.soa.rs.triviacreator.jaxb.AnswerBank;
@@ -115,15 +117,19 @@ public class SoaTrivia implements Runnable {
 
 		try {
 			while (this.triviaEnabled && questions.hasNext()) {
+				/*
+				 * Configuration stores number of seconds. Loop that number of times, sleeping 1
+				 * second each time, and check if paused/stopped after each second passes.
+				 */
 				for (int i = 0; i < configuration.getWaitTime(); i++) {
-					Thread.sleep(1000); // time in seconds
+					Thread.sleep(1000); // 1 second
 					if (!checkStatus())
 						return;
 				}
 				messageChannel(timesUp + question.getAnswer());
 
 				Thread.sleep(3000);
-				if (!!checkStatus())
+				if (!checkStatus())
 					return;
 				if (questions.hasNext()) {
 					question = questions.next();
@@ -136,14 +142,13 @@ public class SoaTrivia implements Runnable {
 
 			// Last question
 			for (int i = 0; i < configuration.getWaitTime(); i++) {
-				Thread.sleep(1000); // time in seconds
+				Thread.sleep(1000);
 				if (!checkStatus())
 					return;
 			}
 			messageChannel(timesUp + question.getAnswer());
 
 		} catch (InterruptedException e) {
-			// Place killswitch here
 			this.triviaEnabled = false;
 			return;
 		}
@@ -153,6 +158,7 @@ public class SoaTrivia implements Runnable {
 			SoaLogging.getLogger().error("Error exporting answers", e);
 		}
 		this.triviaEnabled = false;
+		SoaLogging.getLogger().info("Trivia has ended as  all questions have been asked.");
 	}
 
 	/**
@@ -165,10 +171,10 @@ public class SoaTrivia implements Runnable {
 	 *             thread, as it means trivia is no longer enabled.
 	 */
 	private boolean checkStatus() throws InterruptedException {
-		if (isTriviaPaused()) {
-			while (isTriviaPaused()) {
-				Thread.sleep(1000);
-			}
+		while (isTriviaPaused()) {
+			if (!isEnabled())
+				return false;
+			Thread.sleep(1000);
 		}
 		if (!isEnabled())
 			return false;
@@ -329,9 +335,10 @@ public class SoaTrivia implements Runnable {
 			filename = filename.replaceAll(" ", "_");
 			SoaClientHelper.sendMsgWithFileToUser(this.triviaMaster, client,
 					"Trivia Answers file for Trivia: " + this.configuration.getTriviaName(), dataStream, filename);
-		} catch (JAXBException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (JAXBException | SAXException | IOException e) {
+			SoaClientHelper.sendMessageToUser(this.triviaMaster, client,
+					"Trivia Answers were unable to be provided due to an error; this should be reported to the developer.");
+			SoaLogging.getLogger().error("Error sending Trivia Answers to the user: " + e.getMessage(), e);
 		} finally {
 			dataStream.close();
 		}
@@ -348,6 +355,7 @@ public class SoaTrivia implements Runnable {
 		this.question = null;
 		this.answersDoc = null;
 		this.triviaEnabled = false;
+		this.triviaPaused = false;
 	}
 
 	/*

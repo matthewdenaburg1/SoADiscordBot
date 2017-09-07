@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.xml.bind.JAXBException;
 
+import org.xml.sax.SAXException;
+
 import com.soa.rs.discordbot.cfg.ConfigReader;
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
 import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
@@ -47,7 +49,7 @@ public class MockDiscordCfg {
 	 *            the path to the configuration file
 	 * @throws JAXBException
 	 */
-	public void loadFromFile(String filename) throws JAXBException {
+	public void loadFromFile(String filename) throws JAXBException, SAXException {
 		ConfigReader reader = new ConfigReader();
 		DiscordConfiguration cfg = reader.loadAppConfig(filename);
 		loadFromDiscordConfiguration(cfg);

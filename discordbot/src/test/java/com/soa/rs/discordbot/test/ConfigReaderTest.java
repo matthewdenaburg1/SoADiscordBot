@@ -4,6 +4,7 @@ import javax.xml.bind.JAXBException;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import com.soa.rs.discordbot.cfg.ConfigReader;
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
@@ -16,7 +17,7 @@ public class ConfigReaderTest {
 		DiscordConfiguration cfg = null;
 		try {
 			cfg = reader.loadAppConfig(this.getClass().getResource("/config-test.xml").getPath());
-		} catch (JAXBException e) {
+		} catch (JAXBException | SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
