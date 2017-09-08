@@ -12,9 +12,13 @@ import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 /**
- * The <tt>DiscordCfg</tt> singleton class is used for storing any configuration
- * which will be accessed by other parts of the bot. Configuration can be stored
+ * The <tt>DiscordCfg</tt> class is used for storing any configuration which
+ * will be accessed by other parts of the bot. Configuration can be stored
  * within this class for easy access from other classes as needed.
+ * <p>
+ * The DiscordCfg should be created and accessed via
+ * {@link DiscordCfgFactory#getConfig()}, and not via directly calling this
+ * class.
  */
 
 public class DiscordCfg {
@@ -22,56 +26,44 @@ public class DiscordCfg {
 	/**
 	 * The event calendar feed from the SoA forums.
 	 */
-	private static String eventForumUrl = null;
+	private String eventForumUrl = null;
 
 	/**
 	 * The Discord Login token used to log in the bot.
 	 */
-	private static String token = null;
+	private String token = null;
 
 	/**
 	 * The date the last time that news was posted.
 	 */
-	private static Date newsLastPost = null;
+	private Date newsLastPost = null;
 
 	/**
 	 * The RSS feed URL for SoA News
 	 */
-	private static String newsUrl = null;
+	private String newsUrl = null;
 
 	/**
 	 * The Uptime of the bot
 	 */
-	private static LocalDateTime launchTime = null;
-
-	protected DiscordCfg() {
-	}
+	private LocalDateTime launchTime = null;
 
 	/**
-	 * Singleton instantiator of the configuration. This setup is noted by
-	 * online documentation of being thread safe.
+	 * Constructor for creating a DiscordCfg. This should never be called within the
+	 * application outside of {@link DiscordCfgFactory}, and instead
+	 * {@link DiscordCfgFactory#getConfig()} should be used.
 	 */
-	private static class DiscordConfigSingleton {
-		private static final DiscordCfg INSTANCE = new DiscordCfg();
+	DiscordCfg() {
 	}
 
 	/**
-	 * Returns the singleton instance of the configuration
-	 * 
-	 * @return Configuration instance
-	 */
-	public static DiscordCfg getInstance() {
-		return DiscordConfigSingleton.INSTANCE;
-	}
-
-	/**
-	 * Load an initial configuration from the configuration file specified on
-	 * the command line.
+	 * Load an initial configuration from the configuration file specified on the
+	 * command line.
 	 * 
 	 * @param filename
 	 *            the path to the configuration file
 	 * @throws JAXBException
-	 * @throws SAXException 
+	 * @throws SAXException
 	 */
 	public void loadFromFile(String filename) throws JAXBException, SAXException {
 		ConfigReader reader = new ConfigReader();
@@ -169,6 +161,7 @@ public class DiscordCfg {
 
 	/**
 	 * Get the launch time of the bot
+	 * 
 	 * @return the launch time for the bot
 	 */
 	public LocalDateTime getLaunchTime() {
@@ -177,15 +170,16 @@ public class DiscordCfg {
 
 	/**
 	 * Set the launch time of the bot
-	 * @param launchTime the launch time of the bot
+	 * 
+	 * @param launchTime
+	 *            the launch time of the bot
 	 */
 	public void setLaunchTime(LocalDateTime launchTime) {
-		DiscordCfg.launchTime = launchTime;
+		this.launchTime = launchTime;
 	}
 
 	/**
-	 * Verify the necessary configuration items needed to start the bot are
-	 * present.
+	 * Verify the necessary configuration items needed to start the bot are present.
 	 * 
 	 * @return true if all parameters are present, false if otherwise.
 	 */

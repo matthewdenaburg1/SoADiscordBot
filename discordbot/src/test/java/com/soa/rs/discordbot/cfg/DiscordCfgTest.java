@@ -1,4 +1,4 @@
-package com.soa.rs.discordbot.test;
+package com.soa.rs.discordbot.cfg;
 
 import java.util.Date;
 
@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
+import com.soa.rs.discordbot.util.SoaLogging;
 
 public class DiscordCfgTest {
 
@@ -21,11 +22,12 @@ public class DiscordCfgTest {
 		cfg.setDiscordToken("DToken1");
 		cfg.setEventUrl("http://1.google.com");
 		cfg.setNewsUrl("http://2.google.com");
+		SoaLogging.initializeLogging();
 	}
 
 	@Test
 	public void testLoadFromDiscordConfiguration() {
-		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
+		DiscordCfg mockDiscordCfg = new DiscordCfg();
 
 		mockDiscordCfg.loadFromDiscordConfiguration(cfg);
 
@@ -41,7 +43,7 @@ public class DiscordCfgTest {
 
 	@Test
 	public void testLoadFromFile() {
-		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
+		DiscordCfg mockDiscordCfg = new DiscordCfg();
 		try {
 			mockDiscordCfg.loadFromFile(this.getClass().getResource("/config-test.xml").getPath());
 		} catch (JAXBException | SAXException e) {
@@ -56,7 +58,7 @@ public class DiscordCfgTest {
 
 	@Test
 	public void testSetAndGetToken() {
-		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
+		DiscordCfg mockDiscordCfg = new DiscordCfg();
 
 		Assert.assertEquals(mockDiscordCfg.getToken(), null);
 		mockDiscordCfg.setToken("DToken2");
@@ -66,7 +68,7 @@ public class DiscordCfgTest {
 
 	@Test
 	public void testSetAndGetEventUrl() {
-		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
+		DiscordCfg mockDiscordCfg = new DiscordCfg();
 
 		Assert.assertEquals(mockDiscordCfg.getEventCalendarUrl(), null);
 		mockDiscordCfg.setEventCalendarUrl("http://2.google.com");
@@ -76,7 +78,7 @@ public class DiscordCfgTest {
 
 	@Test
 	public void testSetAndGetNewsUrl() {
-		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
+		DiscordCfg mockDiscordCfg = new DiscordCfg();
 
 		Assert.assertEquals(mockDiscordCfg.getNewsUrl(), null);
 		mockDiscordCfg.setNewsUrl("http://3.google.com");
@@ -86,7 +88,7 @@ public class DiscordCfgTest {
 
 	@Test
 	public void testSetAndGetNewsLastPost() {
-		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
+		DiscordCfg mockDiscordCfg = new DiscordCfg();
 
 		Assert.assertEquals(mockDiscordCfg.getNewsLastPost(), null);
 		Date now = new Date();
@@ -97,7 +99,7 @@ public class DiscordCfgTest {
 
 	@Test
 	public void checkNecessaryConfigurationTest() {
-		MockDiscordCfg mockDiscordCfg = new MockDiscordCfg();
+		DiscordCfg mockDiscordCfg = new DiscordCfg();
 
 		Assert.assertFalse(mockDiscordCfg.checkNecessaryConfiguration());
 

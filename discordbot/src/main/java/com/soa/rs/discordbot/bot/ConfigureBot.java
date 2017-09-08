@@ -5,7 +5,7 @@ import javax.xml.bind.JAXBException;
 import org.xml.sax.SAXException;
 
 import com.soa.rs.discordbot.cfg.ConfigWriter;
-import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
 import com.soa.rs.discordbot.util.SoaLogging;
 
@@ -47,13 +47,13 @@ public class ConfigureBot {
 		while (i < args.length) {
 			if (args[i].equals("-token")) {
 				i++;
-				DiscordCfg.getInstance().setToken(args[i]);
+				DiscordCfgFactory.getConfig().setToken(args[i]);
 			} else if (args[i].equals("-eventUrl")) {
 				i++;
-				DiscordCfg.getInstance().setEventCalendarUrl(args[i]);
+				DiscordCfgFactory.getConfig().setEventCalendarUrl(args[i]);
 			} else if (args[i].equals("-newsUrl")) {
 				i++;
-				DiscordCfg.getInstance().setNewsUrl(args[i]);
+				DiscordCfgFactory.getConfig().setNewsUrl(args[i]);
 			} else if (args[i].equals("-cfg")) {
 				i++;
 				loadCfg(args[i]);
@@ -76,7 +76,7 @@ public class ConfigureBot {
 	 * Launches the bot
 	 */
 	public void launch() {
-		if (!DiscordCfg.getInstance().checkNecessaryConfiguration()) {
+		if (!DiscordCfgFactory.getConfig().checkNecessaryConfiguration()) {
 			printMissingConfiguration();
 		}
 		SoaLogging.getLogger().info("*********STARTING*********");
@@ -90,7 +90,7 @@ public class ConfigureBot {
 	 */
 	private void printMissingConfiguration() {
 		SoaLogging.getLogger().error("Missing required configuration item, the following were missing:"
-				+ DiscordCfg.getInstance().getMissingConfigurationParameter());
+				+ DiscordCfgFactory.getConfig().getMissingConfigurationParameter());
 		printUsage();
 		System.exit(-1);
 	}
@@ -103,7 +103,7 @@ public class ConfigureBot {
 	 */
 	private void loadCfg(String cfg) {
 		try {
-			DiscordCfg.getInstance().loadFromFile(cfg);
+			DiscordCfgFactory.getConfig().loadFromFile(cfg);
 		} catch (JAXBException | SAXException e) {
 			SoaLogging.getLogger().error("Error loading configuration from xml file", e);
 		}
@@ -118,10 +118,10 @@ public class ConfigureBot {
 	 */
 	private void saveCfg(String cfg) {
 		DiscordConfiguration dsc = new DiscordConfiguration();
-		if (DiscordCfg.getInstance().checkNecessaryConfiguration()) {
-			dsc.setDiscordToken(DiscordCfg.getInstance().getToken());
-			dsc.setEventUrl(DiscordCfg.getInstance().getEventCalendarUrl());
-			dsc.setNewsUrl(DiscordCfg.getInstance().getNewsUrl());
+		if (DiscordCfgFactory.getConfig().checkNecessaryConfiguration()) {
+			dsc.setDiscordToken(DiscordCfgFactory.getConfig().getToken());
+			dsc.setEventUrl(DiscordCfgFactory.getConfig().getEventCalendarUrl());
+			dsc.setNewsUrl(DiscordCfgFactory.getConfig().getNewsUrl());
 			ConfigWriter writer = new ConfigWriter();
 			try {
 				writer.writeConfig(dsc, cfg);

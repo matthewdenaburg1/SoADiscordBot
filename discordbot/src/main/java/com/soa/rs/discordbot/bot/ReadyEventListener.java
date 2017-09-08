@@ -3,7 +3,7 @@ package com.soa.rs.discordbot.bot;
 import com.soa.rs.discordbot.bot.events.SoaEventListerScheduler;
 import com.soa.rs.discordbot.bot.events.SoaNewsListerScheduler;
 import com.soa.rs.discordbot.bot.events.SoaTaskScheduler;
-import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 import com.soa.rs.discordbot.util.SoaLogging;
@@ -33,9 +33,9 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 		client = event.getClient();
 		setDiscordUserSettings();
 		SoaTaskScheduler listScheduler = new SoaEventListerScheduler(client,
-				DiscordCfg.getInstance().getEventCalendarUrl());
+				DiscordCfgFactory.getConfig().getEventCalendarUrl());
 		listScheduler.scheduleTask();
-		SoaTaskScheduler newsScheduler = new SoaNewsListerScheduler(client, DiscordCfg.getInstance().getNewsUrl());
+		SoaTaskScheduler newsScheduler = new SoaNewsListerScheduler(client, DiscordCfgFactory.getConfig().getNewsUrl());
 		newsScheduler.scheduleTask();
 	}
 

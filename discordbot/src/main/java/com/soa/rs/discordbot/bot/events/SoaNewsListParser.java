@@ -7,7 +7,7 @@ import java.util.Iterator;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
-import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 /**
@@ -38,8 +38,8 @@ public class SoaNewsListParser extends SoaDefaultRssParser {
 			SyndFeed feed = getFeed();
 			Date now = new Date();
 
-			if (DiscordCfg.getInstance().getNewsLastPost() == null) {
-				DiscordCfg.getInstance().setNewsLastPost(now);
+			if (DiscordCfgFactory.getConfig().getNewsLastPost() == null) {
+				DiscordCfgFactory.getConfig().setNewsLastPost(now);
 				SoaLogging.getLogger().info("LastNews is null, setting NewsLastPost to " + now.toString());
 				return null;
 			}
@@ -48,13 +48,13 @@ public class SoaNewsListParser extends SoaDefaultRssParser {
 			StringBuilder sb = new StringBuilder();
 			while (entryIter.hasNext()) {
 				SyndEntry entry = (SyndEntry) entryIter.next();
-				if (entry.getPublishedDate().compareTo(DiscordCfg.getInstance().getNewsLastPost()) > 0) {
+				if (entry.getPublishedDate().compareTo(DiscordCfgFactory.getConfig().getNewsLastPost()) > 0) {
 					sb.append("**News: **");
 					sb.append(entry.getTitle());
 					sb.append(": " + entry.getLink() + "\n");
 				}
 			}
-			DiscordCfg.getInstance().setNewsLastPost(now);
+			DiscordCfgFactory.getConfig().setNewsLastPost(now);
 			SoaLogging.getLogger().info("Setting NewsLastPost to " + now.toString());
 			return sb.toString();
 		} catch (IllegalArgumentException | FeedException | IOException e) {

@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.Timer;
 
-import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
@@ -31,8 +31,8 @@ public class SoaNewsListerScheduler implements SoaTaskScheduler {
 	public SoaNewsListerScheduler(IDiscordClient client, String url) {
 		this.client = client;
 		this.url = url;
-		DiscordCfg.getInstance().setNewsLastPost(new Date());
-		SoaLogging.getLogger().info("Setting NewsLastPost to " + DiscordCfg.getInstance().getNewsLastPost().toString());
+		DiscordCfgFactory.getConfig().setNewsLastPost(new Date());
+		SoaLogging.getLogger().info("Setting NewsLastPost to " + DiscordCfgFactory.getConfig().getNewsLastPost().toString());
 	}
 
 	/**

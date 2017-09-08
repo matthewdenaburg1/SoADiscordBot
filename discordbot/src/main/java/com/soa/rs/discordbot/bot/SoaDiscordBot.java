@@ -2,7 +2,7 @@ package com.soa.rs.discordbot.bot;
 
 import java.time.LocalDateTime;
 
-import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.ClientBuilder;
@@ -29,7 +29,7 @@ public class SoaDiscordBot {
 	 * appropriate event listeners
 	 */
 	public void start() {
-		SoaLogging.getLogger().info("Logging-in bot with Token: " + DiscordCfg.getInstance().getToken());
+		SoaLogging.getLogger().info("Logging-in bot with Token: " + DiscordCfgFactory.getConfig().getToken());
 		try {
 			client = loginClient();
 		} catch (DiscordException e) {
@@ -38,7 +38,7 @@ public class SoaDiscordBot {
 		}
 		if (client != null) {
 			SoaLogging.getLogger().info("Logged in to Discord");
-			DiscordCfg.getInstance().setLaunchTime(LocalDateTime.now());
+			DiscordCfgFactory.getConfig().setLaunchTime(LocalDateTime.now());
 			EventDispatcher dispatcher = client.getDispatcher();
 			dispatcher.registerListener(new ReadyEventListener());
 			dispatcher.registerListener(new MessageReceivedEventListener());
@@ -54,7 +54,7 @@ public class SoaDiscordBot {
 	 */
 	private IDiscordClient loginClient() throws DiscordException {
 		ClientBuilder clientBuilder = new ClientBuilder();
-		clientBuilder.withToken(DiscordCfg.getInstance().getToken());
+		clientBuilder.withToken(DiscordCfgFactory.getConfig().getToken());
 		return clientBuilder.login();
 	}
 

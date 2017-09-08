@@ -3,7 +3,7 @@ package com.soa.rs.discordbot.bot.events;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 
@@ -38,7 +38,7 @@ public class SoaBotInfoEvent extends AbstractSoaMsgRcvEvent {
 	@Override
 	public void executeEvent() {
 
-		LocalDateTime launch = DiscordCfg.getInstance().getLaunchTime();
+		LocalDateTime launch = DiscordCfgFactory.getConfig().getLaunchTime();
 		LocalDateTime now = LocalDateTime.now();
 
 		Duration uptime = Duration.between(launch, now);

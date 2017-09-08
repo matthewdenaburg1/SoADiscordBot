@@ -7,7 +7,7 @@ import com.soa.rs.discordbot.bot.events.SoaEventListerTask;
 import com.soa.rs.discordbot.bot.events.SoaHelpEvent;
 import com.soa.rs.discordbot.bot.events.SoaMusicPlayer;
 import com.soa.rs.discordbot.bot.events.SoaTriviaManager;
-import com.soa.rs.discordbot.cfg.DiscordCfg;
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 import com.soa.rs.discordbot.util.SoaLogging;
 
@@ -69,7 +69,7 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 			 */
 			else if (args[0].equalsIgnoreCase("events")) {
 				if (eventListerTask == null) {
-					eventListerTask = new SoaEventListerTask(DiscordCfg.getInstance().getEventCalendarUrl(),
+					eventListerTask = new SoaEventListerTask(DiscordCfgFactory.getConfig().getEventCalendarUrl(),
 							event.getClient(), msg.getChannel());
 					eventListerTask.run();
 				} else {
