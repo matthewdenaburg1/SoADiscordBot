@@ -12,7 +12,7 @@ public class DiscordCfgFactory {
 	/**
 	 * The Discord Configuration object for the bot.
 	 */
-	private static final DiscordCfg discordCfg = new DiscordCfg();
+	private static final DiscordCfg CONFIG = new DiscordCfg();
 
 	/**
 	 * Returns the Discord Configuration for the bot. Any call to this method will
@@ -21,7 +21,7 @@ public class DiscordCfgFactory {
 	 * @return Discord Configuration object
 	 */
 	public static DiscordCfg getConfig() {
-		return discordCfg;
+		return CONFIG;
 	}
 
 }
