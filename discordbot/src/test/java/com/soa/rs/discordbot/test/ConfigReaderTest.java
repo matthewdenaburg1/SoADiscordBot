@@ -6,14 +6,14 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import com.soa.rs.discordbot.cfg.ConfigReader;
+import com.soa.rs.discordbot.cfg.XmlReader;
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
 
 public class ConfigReaderTest {
 
 	@Test
 	public void testConfigReader() {
-		ConfigReader reader = new ConfigReader();
+		XmlReader reader = new XmlReader();
 		DiscordConfiguration cfg = null;
 		try {
 			cfg = reader.loadAppConfig(this.getClass().getResource("/config-test.xml").getPath());

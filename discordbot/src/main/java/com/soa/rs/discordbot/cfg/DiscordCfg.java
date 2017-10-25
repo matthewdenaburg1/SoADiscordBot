@@ -48,6 +48,8 @@ public class DiscordCfg {
 	 */
 	private LocalDateTime launchTime = null;
 
+	private String trackingFile = null;
+
 	/**
 	 * Constructor for creating a DiscordCfg. This should never be called within the
 	 * application outside of {@link DiscordCfgFactory}, and instead
@@ -66,7 +68,7 @@ public class DiscordCfg {
 	 * @throws SAXException
 	 */
 	public void loadFromFile(String filename) throws JAXBException, SAXException {
-		ConfigReader reader = new ConfigReader();
+		XmlReader reader = new XmlReader();
 		DiscordConfiguration cfg = reader.loadAppConfig(filename);
 		loadFromDiscordConfiguration(cfg);
 	}
@@ -81,6 +83,7 @@ public class DiscordCfg {
 		eventForumUrl = cfg.getEventUrl();
 		token = cfg.getDiscordToken();
 		newsUrl = cfg.getNewsUrl();
+		trackingFile = cfg.getTrackingFile();
 	}
 
 	/**
@@ -176,6 +179,14 @@ public class DiscordCfg {
 	 */
 	public void setLaunchTime(LocalDateTime launchTime) {
 		this.launchTime = launchTime;
+	}
+
+	public String getTrackingFile() {
+		return trackingFile;
+	}
+
+	public void setTrackingFile(String trackingFile) {
+		this.trackingFile = trackingFile;
 	}
 
 	/**

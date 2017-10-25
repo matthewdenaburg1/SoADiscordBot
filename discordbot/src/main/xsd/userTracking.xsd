@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+  jaxb:extensionBindingPrefixes="xjc"
+  xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+  jaxb:version="2.0">
+  
+  <xsd:element name="tracked-information" type="Tracked-Information"/>
+  
+  <xsd:complexType name="Tracked-Information">
+  <xsd:sequence>
+  <xsd:element name="guild" type="Guild" minOccurs="0" maxOccurs="unbounded"/>
+  </xsd:sequence>
+  </xsd:complexType>
+  
+  <xsd:complexType name="Guild">
+  <xsd:sequence>
+    <xsd:element name="guild-id" type="xsd:long" minOccurs="1" maxOccurs="1"/>
+  <xsd:element name="guild-name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+  <xsd:element name="guild-users" type="Guild-Users" minOccurs="1" maxOccurs="1"/>
+  <xsd:element name="left-users" type="Left-Users" minOccurs="1" maxOccurs="1"/>
+  </xsd:sequence>
+  </xsd:complexType>
+  
+  <xsd:complexType name="Guild-Users">
+  <xsd:sequence>
+  <xsd:element name="user" type="Current-User" minOccurs="0" maxOccurs="unbounded"/>
+  </xsd:sequence>
+  </xsd:complexType>
+  
+  <xsd:complexType name="Current-User">
+  <xsd:sequence>
+  <xsd:element name="user-id" type="xsd:long" minOccurs="1" maxOccurs="1"/>
+  <xsd:element name="user-name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+  <xsd:element name="known-name" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+  <xsd:element name="displayNames" type="Display-Names" minOccurs="1" maxOccurs="1"/>
+  <xsd:element name="joined" type="xsd:date" minOccurs="1" maxOccurs="1"/>
+  <xsd:element name="lastOnline" type="xsd:date" minOccurs="1" maxOccurs="1"/>
+  </xsd:sequence>
+  </xsd:complexType>
+  
+  <xsd:complexType name="Display-Names">
+  <xsd:sequence>
+  <xsd:element name="displayName" type="xsd:string" minOccurs="1" maxOccurs="unbounded"/>
+  </xsd:sequence>
+  </xsd:complexType>
+  
+  <xsd:complexType name="Left-Users">
+  <xsd:sequence>
+  <xsd:element name="user" type="Left-User" minOccurs="0" maxOccurs="unbounded"/>
+  </xsd:sequence>
+  </xsd:complexType>
+  
+  <xsd:complexType name="Left-User">
+  <xsd:sequence>
+  <xsd:element name="user-id" type="xsd:long" minOccurs="1" maxOccurs="1"/>
+  <xsd:element name="user-name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+  <xsd:element name="displayNames" type="Display-Names" minOccurs="1" maxOccurs="1"/>
+  <xsd:element name="left" type="xsd:date" minOccurs="1" maxOccurs="1"/>
+  </xsd:sequence>
+  </xsd:complexType>
+  
+    </xsd:schema>

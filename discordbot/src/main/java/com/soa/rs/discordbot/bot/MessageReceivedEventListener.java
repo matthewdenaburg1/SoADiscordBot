@@ -7,6 +7,7 @@ import com.soa.rs.discordbot.bot.events.SoaEventListerTask;
 import com.soa.rs.discordbot.bot.events.SoaHelpEvent;
 import com.soa.rs.discordbot.bot.events.SoaMusicPlayer;
 import com.soa.rs.discordbot.bot.events.SoaTriviaManager;
+import com.soa.rs.discordbot.bot.events.UserTrackingQuery;
 import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 import com.soa.rs.discordbot.util.SoaLogging;
@@ -96,6 +97,12 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 				newsEvent.setMustHavePermission(new String[] { "Eldar", "Lian" });
 				newsEvent.setArgs(args);
 				newsEvent.executeEvent();
+			}
+
+			else if (args[0].equalsIgnoreCase("user")) {
+				UserTrackingQuery queryEvent = new UserTrackingQuery(event);
+				queryEvent.setArgs(args);
+				queryEvent.executeEvent();
 			}
 
 			else if (args[0].equalsIgnoreCase("help")) {

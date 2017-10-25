@@ -1,12 +1,18 @@
 package com.soa.rs.discordbot.util;
 
 import java.io.InputStream;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.DiscordException;
+import sx.blah.discord.util.EmbedBuilder;
 import sx.blah.discord.util.Image;
 import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RequestBuffer;
@@ -108,6 +114,26 @@ public class SoaClientHelper {
 		});
 	}
 
+	public static void sendEmbedToChannel(IChannel channel, EmbedBuilder msg) {
+		RequestBuffer.request(() -> {
+			try {
+				channel.sendMessage(msg.build());
+			} catch (MissingPermissionsException | DiscordException e) {
+				SoaLogging.getLogger().error("Error sending message: " + e.getMessage(), e);
+			}
+		});
+	}
+
+	public static String getDiscordUserNameForUser(IUser user) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("@");
+		sb.append(user.getName());
+		sb.append("#");
+		sb.append(user.getDiscriminator());
+
+		return sb.toString();
+	}
+
 	public static void deleteMessageFromChannel(IMessage msg) {
 		RequestBuffer.request(() -> {
 			try {
@@ -168,6 +194,26 @@ public class SoaClientHelper {
 		RequestBuffer.request(() -> {
 			client.changePlayingText(playing);
 		});
+	}
+
+	public static boolean isRank(IMessage msg, String roleString) {
+		String[] roleStrings = new String[] { roleString };
+		return isRank(msg, roleStrings);
+	}
+
+	public static boolean isRank(IMessage msg, String[] roleStrings) {
+		IGuild guild = msg.getGuild();
+		List<IRole> roleListing = new LinkedList<IRole>(msg.getAuthor().getRolesForGuild(guild));
+		Iterator<IRole> roleIterator = roleListing.iterator();
+
+		while (roleIterator.hasNext()) {
+			IRole role = roleIterator.next();
+			for (String roleString : roleStrings) {
+				if (role.getName().equalsIgnoreCase(roleString))
+					return true;
+			}
+		}
+		return false;
 	}
 
 }

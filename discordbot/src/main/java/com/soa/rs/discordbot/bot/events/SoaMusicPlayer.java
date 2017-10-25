@@ -45,6 +45,7 @@ public class SoaMusicPlayer {
 	private IMessage msg;
 	private final AudioPlayerManager playerManager;
 	private final Map<Long, GuildMusicManager> musicManagers;
+	private boolean disableRankCheck = false;
 
 	public SoaMusicPlayer(IMessage msg) {
 		this.playerManager = new DefaultAudioPlayerManager();
@@ -67,8 +68,8 @@ public class SoaMusicPlayer {
 	}
 
 	/**
-	 * Get the GuildMusicManager for the provided guild. If one does not exist,
-	 * one will be created.
+	 * Get the GuildMusicManager for the provided guild. If one does not exist, one
+	 * will be created.
 	 * 
 	 * @param guild
 	 *            The guild for which a music manager will be retrieved
@@ -89,8 +90,8 @@ public class SoaMusicPlayer {
 	}
 
 	/**
-	 * Checks to determine if the person who has issued a music command is
-	 * permitted to run the MusicPlayer
+	 * Checks to determine if the person who has issued a music command is permitted
+	 * to run the MusicPlayer
 	 * 
 	 * @param event
 	 *            MessageReceivedEvent
@@ -100,6 +101,9 @@ public class SoaMusicPlayer {
 		IGuild guild = event.getMessage().getGuild();
 		if (guild == null) {
 			return false;
+		}
+		if (disableRankCheck) {
+			return true;
 		}
 		List<IRole> roleListing = new LinkedList<IRole>(event.getMessage().getAuthor().getRolesForGuild(guild));
 		Iterator<IRole> roleIterator = roleListing.iterator();
@@ -159,7 +163,10 @@ public class SoaMusicPlayer {
 		}
 
 		if (message.equals("play")) {
-			sb.append(" " + args[2]);
+			if (args.length > 2)
+				sb.append(" " + args[2]);
+			else
+				sb.append(" uploaded track");
 			SoaLogging.getLogger().info(sb.toString());
 			handlePlay(args, event.getMessage().getChannel());
 		}
@@ -201,6 +208,19 @@ public class SoaMusicPlayer {
 			SoaLogging.getLogger().info(sb.toString());
 			handleVolume(event.getMessage().getChannel(), args);
 		}
+		if (message.equalsIgnoreCase("disableRankCheck")) {
+
+			if (SoaClientHelper.isRank(msg, "Eldar")) {
+				if (args[2].equals("true")) {
+					disableRankCheck = true;
+				} else if (args[2].equals("false")) {
+					disableRankCheck = false;
+				}
+				SoaClientHelper.sendMsgToChannel(msg.getChannel(),
+						"Settings updated, disableRankCheck set to " + disableRankCheck);
+			}
+
+		}
 	}
 
 	/**
@@ -214,45 +234,16 @@ public class SoaMusicPlayer {
 	private void handlePlay(String[] args, IChannel channel) {
 		GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
 
-		playerManager.loadItemOrdered(musicManager, args[2], new AudioLoadResultHandler() {
-			@Override
-			public void trackLoaded(AudioTrack track) {
-				sendMessageToChannel(channel, "Adding to queue " + track.getInfo().title);
+		if (!this.msg.getAttachments().isEmpty() && this.msg.getAttachments().get(0).getUrl() != null) {
+			playerManager.loadItemOrdered(musicManager, this.msg.getAttachments().get(0).getUrl(),
+					new DefaultAudioLoadResultHandler(musicManager, channel, null));
+		}
 
-				musicManager.scheduler.queue(track);
-			}
+		else if (args.length > 2) {
+			playerManager.loadItemOrdered(musicManager, args[2],
+					new DefaultAudioLoadResultHandler(musicManager, channel, args[2]));
+		}
 
-			@Override
-			public void playlistLoaded(AudioPlaylist playlist) {
-				AudioTrack firstTrack = playlist.getSelectedTrack();
-
-				if (firstTrack == null) {
-					firstTrack = playlist.getTracks().get(0);
-				}
-
-				sendMessageToChannel(channel, "Adding to queue " + firstTrack.getInfo().title
-						+ " (first track of playlist " + playlist.getName() + ")");
-
-				musicManager.scheduler.queue(firstTrack);
-
-				for (int i = 1; i < playlist.getTracks().size(); i++) {
-					firstTrack = playlist.getTracks().get(i);
-
-					musicManager.scheduler.queue(firstTrack);
-					SoaLogging.getLogger().info("Adding song from Playlist: " + firstTrack.getInfo().title);
-				}
-			}
-
-			@Override
-			public void noMatches() {
-				sendMessageToChannel(channel, "Nothing found by " + args[2]);
-			}
-
-			@Override
-			public void loadFailed(FriendlyException exception) {
-				sendMessageToChannel(channel, "Could not play: " + exception.getMessage());
-			}
-		});
 	}
 
 	/**
@@ -392,11 +383,14 @@ public class SoaMusicPlayer {
 	private void handleHelp() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("```Help: Music (command: .music [args])\n");
-		sb.append(
-				"Note - This menu and these commands will only work for users assigned the role \"Eldar\", \"Lian\", \"Arquendi\", or \"DJ\"\n\n");
-
+		if (!disableRankCheck) {
+			sb.append(
+					"Note - This menu and these commands will only work for users assigned the role \"Eldar\", \"Lian\", \"Arquendi\", or \"DJ\"\n\n");
+		}
 		sb.append(".music join - Bot joins the voice channel you are in.\n");
 		sb.append(".music play <url> - Bot queues up the URL provided.\n");
+		sb.append(
+				".music play <attachment> - Bot will play uploaded file; comment with attachment must be the play command.  Discord enforces an 8mb max file size.\n");
 		sb.append(".music pause - Bot pauses playback.\n");
 		sb.append(".music resume - Bot resumes playback.\n");
 		sb.append(".music skip - Bot skips the currently playing song.\n");
@@ -411,8 +405,8 @@ public class SoaMusicPlayer {
 	}
 
 	/**
-	 * Handles joining a Discord Audio channel. The channel that the caller is
-	 * in is the one that will be joined.
+	 * Handles joining a Discord Audio channel. The channel that the caller is in is
+	 * the one that will be joined.
 	 */
 	private void handleJoinChannel() {
 		try {
@@ -442,5 +436,59 @@ public class SoaMusicPlayer {
 		if (chan != null)
 			chan.leave();
 
+	}
+
+	class DefaultAudioLoadResultHandler implements AudioLoadResultHandler {
+		private GuildMusicManager musicManager;
+		private IChannel channel;
+		private String musicArg;
+
+		public DefaultAudioLoadResultHandler(GuildMusicManager manager, IChannel channel, String musicArg) {
+			this.musicManager = manager;
+			this.channel = channel;
+			if (musicArg != null) {
+				this.musicArg = musicArg;
+			} else {
+				this.musicArg = "Uploaded Track";
+			}
+		}
+
+		@Override
+		public void trackLoaded(AudioTrack track) {
+			sendMessageToChannel(channel, "Adding to queue " + track.getInfo().title);
+
+			musicManager.scheduler.queue(track);
+		}
+
+		@Override
+		public void playlistLoaded(AudioPlaylist playlist) {
+			AudioTrack firstTrack = playlist.getSelectedTrack();
+
+			if (firstTrack == null) {
+				firstTrack = playlist.getTracks().get(0);
+			}
+
+			sendMessageToChannel(channel, "Adding to queue " + firstTrack.getInfo().title + " (first track of playlist "
+					+ playlist.getName() + ")");
+
+			musicManager.scheduler.queue(firstTrack);
+
+			for (int i = 1; i < playlist.getTracks().size(); i++) {
+				firstTrack = playlist.getTracks().get(i);
+
+				musicManager.scheduler.queue(firstTrack);
+				SoaLogging.getLogger().info("Adding song from Playlist: " + firstTrack.getInfo().title);
+			}
+		}
+
+		@Override
+		public void noMatches() {
+			sendMessageToChannel(channel, "Nothing found by " + musicArg);
+		}
+
+		@Override
+		public void loadFailed(FriendlyException exception) {
+			sendMessageToChannel(channel, "Could not play: " + exception.getMessage());
+		}
 	}
 }

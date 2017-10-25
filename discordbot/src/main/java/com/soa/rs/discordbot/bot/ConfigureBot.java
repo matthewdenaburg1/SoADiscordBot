@@ -4,7 +4,7 @@ import javax.xml.bind.JAXBException;
 
 import org.xml.sax.SAXException;
 
-import com.soa.rs.discordbot.cfg.ConfigWriter;
+import com.soa.rs.discordbot.cfg.XmlWriter;
 import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
 import com.soa.rs.discordbot.util.SoaLogging;
@@ -122,7 +122,7 @@ public class ConfigureBot {
 			dsc.setDiscordToken(DiscordCfgFactory.getConfig().getToken());
 			dsc.setEventUrl(DiscordCfgFactory.getConfig().getEventCalendarUrl());
 			dsc.setNewsUrl(DiscordCfgFactory.getConfig().getNewsUrl());
-			ConfigWriter writer = new ConfigWriter();
+			XmlWriter writer = new XmlWriter();
 			try {
 				writer.writeConfig(dsc, cfg);
 			} catch (JAXBException | SAXException e) {

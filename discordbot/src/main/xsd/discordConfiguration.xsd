@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-   <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
-         <xs:element name="discordConfiguration">
-               <xs:complexType>
-                     <xs:sequence>
-                           <xs:element name="discordToken" type="xs:string"></xs:element>
-                           <xs:element name="eventUrl" type="xs:string"></xs:element>
-                           <xs:element name="newsUrl" type="xs:string"></xs:element>
-                     </xs:sequence>
-               </xs:complexType>
-         </xs:element>
-   </xs:schema>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+  jaxb:extensionBindingPrefixes="xjc"
+  xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+  jaxb:version="2.0">
+         <xsd:element name="discordConfiguration">
+               <xsd:complexType>
+                     <xsd:sequence>
+                           <xsd:element name="discordToken" type="xsd:string"></xsd:element>
+                           <xsd:element name="eventUrl" type="xsd:string"></xsd:element>
+                           <xsd:element name="newsUrl" type="xsd:string"></xsd:element>
+			   <xsd:element name="trackingFile" type="xsd:string"/>
+                     </xsd:sequence>
+               </xsd:complexType>
+         </xsd:element>
+   </xsd:schema>
