@@ -1,10 +1,12 @@
 package com.soa.rs.discordbot.cfg;
 
+import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
+
 /**
  * The DiscordCfgFactory is responsible for the creation and maintaining of the
  * Discord Configuration for the running bot. Any access needed to the
  * configuration during runtime should go through this class by calling the
- * static {@link #getConfig()} method.
+ * static {@link #getInstance()} method.
  * 
  */
 public class DiscordCfgFactory {
@@ -20,8 +22,12 @@ public class DiscordCfgFactory {
 	 * 
 	 * @return Discord Configuration object
 	 */
-	public static DiscordCfg getConfig() {
+	public static DiscordCfg getInstance() {
 		return CONFIG;
+	}
+
+	public static DiscordConfiguration getConfig() {
+		return CONFIG.getConfig();
 	}
 
 }

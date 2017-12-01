@@ -6,7 +6,6 @@ import com.soa.rs.discordbot.bot.events.SoaTaskScheduler;
 import com.soa.rs.discordbot.bot.events.UserTrackingScheduler;
 import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.SoaClientHelper;
-import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.api.IDiscordClient;
@@ -25,21 +24,32 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 	private IDiscordClient client;
 
 	/**
-	 * Handles the ReadyEvent sent by the Discord API, this sets up the bot's
-	 * user settings and schedules appropriate automated tasks.
+	 * Handles the ReadyEvent sent by the Discord API, this sets up the bot's user
+	 * settings and schedules appropriate automated tasks.
 	 */
 	@Override
 	public void handle(ReadyEvent event) {
 
 		client = event.getClient();
 		setDiscordUserSettings();
-		SoaTaskScheduler listScheduler = new SoaEventListerScheduler(client,
-				DiscordCfgFactory.getConfig().getEventCalendarUrl());
-		listScheduler.scheduleTask();
-		SoaTaskScheduler newsScheduler = new SoaNewsListerScheduler(client, DiscordCfgFactory.getConfig().getNewsUrl());
-		newsScheduler.scheduleTask();
-		UserTrackingScheduler trackingScheduler = new UserTrackingScheduler(client);
-		trackingScheduler.scheduleTask();
+
+		if (DiscordCfgFactory.getConfig().getEventListingEvent() != null
+				&& DiscordCfgFactory.getConfig().getEventListingEvent().isEnabled()) {
+			SoaTaskScheduler listScheduler = new SoaEventListerScheduler(client,
+					DiscordCfgFactory.getConfig().getEventListingEvent().getUrl());
+			listScheduler.scheduleTask();
+		}
+		if (DiscordCfgFactory.getConfig().getNewsListingEvent() != null
+				&& DiscordCfgFactory.getConfig().getNewsListingEvent().isEnabled()) {
+			SoaTaskScheduler newsScheduler = new SoaNewsListerScheduler(client,
+					DiscordCfgFactory.getConfig().getNewsListingEvent().getUrl());
+			newsScheduler.scheduleTask();
+		}
+		if (DiscordCfgFactory.getConfig().getUserTrackingEvent() != null
+				&& DiscordCfgFactory.getConfig().getUserTrackingEvent().isEnabled()) {
+			UserTrackingScheduler trackingScheduler = new UserTrackingScheduler(client);
+			trackingScheduler.scheduleTask();
+		}
 	}
 
 	/**
@@ -47,11 +57,24 @@ public class ReadyEventListener implements IListener<ReadyEvent> {
 	 */
 	private void setDiscordUserSettings() {
 
-		SoaLogging.getLogger().info("Setting bot avatar");
-		SoaClientHelper.setBotAvatar(client, Image.forUrl("png", SoaDiscordBotConstants.AVATAR_URL));
-		SoaLogging.getLogger().info("Setting bot username to '" + SoaDiscordBotConstants.BOT_USERNAME + "'");
-		SoaClientHelper.setBotName(client, SoaDiscordBotConstants.BOT_USERNAME);
-		SoaClientHelper.setBotPlaying(client, SoaDiscordBotConstants.PLAYING_STATUS);
+		if (DiscordCfgFactory.getInstance().getAvatarUrl() != null) {
+			SoaLogging.getLogger().info("Setting bot avatar");
+
+			String imageType = DiscordCfgFactory.getInstance().getAvatarUrl()
+					.substring(DiscordCfgFactory.getInstance().getAvatarUrl().lastIndexOf(".") + 1);
+
+			SoaClientHelper.setBotAvatar(client,
+					Image.forUrl(imageType, DiscordCfgFactory.getInstance().getAvatarUrl()));
+		}
+		if (DiscordCfgFactory.getInstance().getBotname() != null) {
+
+			SoaLogging.getLogger()
+					.info("Setting bot username to '" + DiscordCfgFactory.getInstance().getBotname() + "'");
+			SoaClientHelper.setBotName(client, DiscordCfgFactory.getInstance().getBotname());
+		}
+
+		if (DiscordCfgFactory.getConfig().getDefaultStatus() != null)
+			SoaClientHelper.setBotPlaying(client, DiscordCfgFactory.getConfig().getDefaultStatus());
 	}
 
 }

@@ -31,8 +31,9 @@ public class SoaNewsListerScheduler implements SoaTaskScheduler {
 	public SoaNewsListerScheduler(IDiscordClient client, String url) {
 		this.client = client;
 		this.url = url;
-		DiscordCfgFactory.getConfig().setNewsLastPost(new Date());
-		SoaLogging.getLogger().info("Setting NewsLastPost to " + DiscordCfgFactory.getConfig().getNewsLastPost().toString());
+		DiscordCfgFactory.getInstance().setNewsLastPost(new Date());
+		SoaLogging.getLogger()
+				.info("Setting NewsLastPost to " + DiscordCfgFactory.getInstance().getNewsLastPost().toString());
 	}
 
 	/**

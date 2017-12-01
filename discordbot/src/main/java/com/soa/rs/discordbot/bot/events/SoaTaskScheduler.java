@@ -11,8 +11,8 @@ public interface SoaTaskScheduler {
 	public abstract void scheduleTask();
 
 	/**
-	 * Cancel the existing timer and then call <tt>scheduleTask</tt> to schedule
-	 * the next run of the task.
+	 * Cancel the existing timer and then call <tt>scheduleTask</tt> to schedule the
+	 * next run of the task.
 	 */
 	public abstract void rescheduleTask();
 

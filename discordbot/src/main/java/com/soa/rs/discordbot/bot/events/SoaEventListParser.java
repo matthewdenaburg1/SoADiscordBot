@@ -10,6 +10,7 @@ import java.util.TimeZone;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.DateAnalyzer;
 import com.soa.rs.discordbot.util.SoaLogging;
 
@@ -36,23 +37,23 @@ public class SoaEventListParser extends SoaDefaultRssParser {
 	 * <p>
 	 * The following logic will be followed:
 	 * <ul>
-	 * <li>If the event date is listed in the feed for a previous date and the
-	 * title contains the word "comp", then the event is assumed to be a weekly
-	 * skill competition and is listed as such. Weekly skill competitions will
-	 * stop being listed 7 days after they are introduced to the feed. If a
-	 * competition is listed and it runs for more than 1 week, the competition
-	 * will only be listed on the current events listing for 1 week.</li>
-	 * <li>If the event date is listed in the feed for a previous date and the
-	 * title contains the word "ongoing", then the event is assumed to be an
-	 * ongoing event (such as a forum event) and is listed as such. Ongoing
-	 * events will continue to be listed until they are no longer in the forum
-	 * event feed. If a competition is listed and also contains the word
-	 * ongoing, it will follow the earlier mentioned competition logic</li>
-	 * <li>If an event is listed on the feed for today's date, the event is
-	 * listed as happening today</li>
-	 * <li>If an event is listed on the feed for a future date, or is listed on
-	 * the feed for a previous date but is not noted as ongoing or a
-	 * competition, the the event is ignored and not listed at all.</li>
+	 * <li>If the event date is listed in the feed for a previous date and the title
+	 * contains the word "comp", then the event is assumed to be a weekly skill
+	 * competition and is listed as such. Weekly skill competitions will stop being
+	 * listed 7 days after they are introduced to the feed. If a competition is
+	 * listed and it runs for more than 1 week, the competition will only be listed
+	 * on the current events listing for 1 week.</li>
+	 * <li>If the event date is listed in the feed for a previous date and the title
+	 * contains the word "ongoing", then the event is assumed to be an ongoing event
+	 * (such as a forum event) and is listed as such. Ongoing events will continue
+	 * to be listed until they are no longer in the forum event feed. If a
+	 * competition is listed and also contains the word ongoing, it will follow the
+	 * earlier mentioned competition logic</li>
+	 * <li>If an event is listed on the feed for today's date, the event is listed
+	 * as happening today</li>
+	 * <li>If an event is listed on the feed for a future date, or is listed on the
+	 * feed for a previous date but is not noted as ongoing or a competition, the
+	 * the event is ignored and not listed at all.</li>
 	 * </ul>
 	 * 
 	 * @return String containing the event listings for that day.
@@ -74,7 +75,11 @@ public class SoaEventListParser extends SoaDefaultRssParser {
 
 			Iterator<SyndEntry> entryIter = feed.getEntries().iterator();
 			StringBuilder sb = new StringBuilder();
-			sb.append("**Today's SoA Events**\n");
+			sb.append("**Today's ");
+			if (DiscordCfgFactory.getConfig().getGuildAbbreviation() != null) {
+				sb.append(DiscordCfgFactory.getConfig().getGuildAbbreviation());
+			}
+			sb.append(" Events**\n");
 			while (entryIter.hasNext()) {
 				SyndEntry entry = (SyndEntry) entryIter.next();
 				cal1.setTime(entry.getPublishedDate());
@@ -109,9 +114,16 @@ public class SoaEventListParser extends SoaDefaultRssParser {
 			if (i == 0) {
 				sb.append("No events to show for today.\n\n");
 			}
-			sb.append("For more event information and upcoming events, check out the");
-			sb.append("\nEvents Forum: https://forums.soa-rs.com/forum/9-events/");
-			sb.append("\nEvents Calendar: https://forums.soa-rs.com/calendar/");
+			if (DiscordCfgFactory.getConfig().getEventListingEvent().getEventEndline() != null
+					&& !DiscordCfgFactory.getConfig().getEventListingEvent().getEventEndline().isEmpty()) {
+				Iterator<String> lineIter = DiscordCfgFactory.getConfig().getEventListingEvent().getEventEndline()
+						.iterator();
+				while (lineIter.hasNext()) {
+					sb.append(lineIter.next());
+					if (lineIter.hasNext())
+						sb.append("\n");
+				}
+			}
 			return sb.toString();
 		} catch (IllegalArgumentException | FeedException | IOException e) {
 			SoaLogging.getLogger().error("Error generating event list", e);

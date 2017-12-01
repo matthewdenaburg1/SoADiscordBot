@@ -19,16 +19,16 @@ public class SoaNewsListParser extends SoaDefaultRssParser {
 	/**
 	 * Constructor which also sets the feed URL
 	 * 
-	 * @param string
+	 * @param url
 	 *            the RSS feed URL
 	 */
-	public SoaNewsListParser(String string) {
-		super(string);
+	public SoaNewsListParser(String url) {
+		super(url);
 	}
 
 	/**
-	 * Collects the information from the RSS feed, determines if it is newer
-	 * than the last check, and if so, adds it to be printed to Discord.
+	 * Collects the information from the RSS feed, determines if it is newer than
+	 * the last check, and if so, adds it to be printed to Discord.
 	 * 
 	 * @return content to be printed to Discord
 	 */
@@ -38,8 +38,8 @@ public class SoaNewsListParser extends SoaDefaultRssParser {
 			SyndFeed feed = getFeed();
 			Date now = new Date();
 
-			if (DiscordCfgFactory.getConfig().getNewsLastPost() == null) {
-				DiscordCfgFactory.getConfig().setNewsLastPost(now);
+			if (DiscordCfgFactory.getInstance().getNewsLastPost() == null) {
+				DiscordCfgFactory.getInstance().setNewsLastPost(now);
 				SoaLogging.getLogger().info("LastNews is null, setting NewsLastPost to " + now.toString());
 				return null;
 			}
@@ -48,13 +48,13 @@ public class SoaNewsListParser extends SoaDefaultRssParser {
 			StringBuilder sb = new StringBuilder();
 			while (entryIter.hasNext()) {
 				SyndEntry entry = (SyndEntry) entryIter.next();
-				if (entry.getPublishedDate().compareTo(DiscordCfgFactory.getConfig().getNewsLastPost()) > 0) {
+				if (entry.getPublishedDate().compareTo(DiscordCfgFactory.getInstance().getNewsLastPost()) > 0) {
 					sb.append("**News: **");
 					sb.append(entry.getTitle());
 					sb.append(": " + entry.getLink() + "\n");
 				}
 			}
-			DiscordCfgFactory.getConfig().setNewsLastPost(now);
+			DiscordCfgFactory.getInstance().setNewsLastPost(now);
 			SoaLogging.getLogger().info("Setting NewsLastPost to " + now.toString());
 			return sb.toString();
 		} catch (IllegalArgumentException | FeedException | IOException e) {

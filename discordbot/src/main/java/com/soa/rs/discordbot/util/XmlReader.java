@@ -1,11 +1,10 @@
-package com.soa.rs.discordbot.cfg;
+package com.soa.rs.discordbot.util;
 
 import java.io.File;
 import java.io.IOException;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
@@ -44,6 +43,8 @@ public class XmlReader {
 		jaxbUnmarshaller.setSchema(schema);
 		config = (DiscordConfiguration) jaxbUnmarshaller.unmarshal(file);
 
+		// config = (DiscordConfiguration) jaxbElement.getValue();
+
 		return config;
 	}
 
@@ -62,9 +63,9 @@ public class XmlReader {
 
 		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 		jaxbUnmarshaller.setSchema(schema);
-		JAXBElement<?> jaxbElement = (JAXBElement<?>) jaxbUnmarshaller.unmarshal(file);
+		info = (TrackedInformation) jaxbUnmarshaller.unmarshal(file);
 
-		info = (TrackedInformation) jaxbElement.getValue();
+		// info = (TrackedInformation) jaxbElement.getValue();
 
 		return info;
 	}

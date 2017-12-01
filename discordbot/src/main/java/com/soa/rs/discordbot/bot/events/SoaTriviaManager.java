@@ -3,25 +3,24 @@ package com.soa.rs.discordbot.bot.events;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
 import org.xml.sax.SAXException;
 
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.NoSuchServerException;
 import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 import com.soa.rs.triviacreator.jaxb.TriviaConfiguration;
 import com.soa.rs.triviacreator.jaxb.TriviaQuestion;
-import com.soa.rs.triviacreator.util.InvalidConfigurationException;
+import com.soa.rs.triviacreator.util.InvalidTriviaConfigurationException;
 import com.soa.rs.triviacreator.util.TriviaFileReader;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.PermissionUtils;
 
@@ -216,7 +215,7 @@ public class SoaTriviaManager {
 				SoaLogging.getLogger().error("Error executing configuration: ", e);
 				SoaClientHelper.sendMsgToChannel(msg.getChannel(),
 						"An error occurred initializing trivia: " + e.getMessage());
-			} catch (InvalidConfigurationException e) {
+			} catch (InvalidTriviaConfigurationException e) {
 				SoaLogging.getLogger().error("Configuration provided was not valid", e);
 				SoaClientHelper.sendMsgToChannel(msg.getChannel(),
 						"The configuration provided could not be validated: " + e.getMessage());
@@ -245,44 +244,44 @@ public class SoaTriviaManager {
 	 * 
 	 * @param configuration
 	 *            The Trivia Configuration uploaded to the Discord bot.
-	 * @throws InvalidConfigurationException
+	 * @throws InvalidTriviaConfigurationException
 	 *             If the configuration is for some reason not valid.
 	 */
-	void validateConfiguration(TriviaConfiguration configuration) throws InvalidConfigurationException {
+	void validateConfiguration(TriviaConfiguration configuration) throws InvalidTriviaConfigurationException {
 		if (configuration.getTriviaName() == null || configuration.getTriviaName().isEmpty()) {
-			throw new InvalidConfigurationException(
+			throw new InvalidTriviaConfigurationException(
 					"The server name field is required, and is empty in the provided configuration");
 		}
 		if (configuration.getServerId() == null || configuration.getServerId().isEmpty()) {
-			throw new InvalidConfigurationException(
+			throw new InvalidTriviaConfigurationException(
 					"The server id field is required, and is empty in the provided configuration");
 		}
 		try {
 			Long.parseLong(configuration.getServerId());
 		} catch (NumberFormatException ex) {
-			throw new InvalidConfigurationException(
+			throw new InvalidTriviaConfigurationException(
 					"The server id field is not valid (should be a long, but could not be parsed as a long)");
 		}
 		if (configuration.getChannelId() == null || configuration.getChannelId().isEmpty()) {
-			throw new InvalidConfigurationException(
+			throw new InvalidTriviaConfigurationException(
 					"The channel id field is required, and is empty in the provided configuration");
 		}
 		try {
 			Long.parseLong(configuration.getChannelId());
 		} catch (NumberFormatException ex) {
-			throw new InvalidConfigurationException(
+			throw new InvalidTriviaConfigurationException(
 					"The channel id field is not valid (should be a long, but could not be parsed as a long)");
 		}
 		if (configuration.getWaitTime() <= 0) {
-			throw new InvalidConfigurationException("The wait time cannot be less than 1");
+			throw new InvalidTriviaConfigurationException("The wait time cannot be less than 1");
 		}
 		for (TriviaQuestion question : configuration.getQuestionBank().getTriviaQuestion()) {
 			if (question.getQuestion() == null || question.getQuestion().isEmpty()) {
-				throw new InvalidConfigurationException(
+				throw new InvalidTriviaConfigurationException(
 						"One of the Trivia Questions provided has no text in the question field.");
 			}
 			if (question.getAnswer() == null || question.getAnswer().isEmpty()) {
-				throw new InvalidConfigurationException(
+				throw new InvalidTriviaConfigurationException(
 						"One of the Trivia Questions provided has no text in the answer field.");
 			}
 		}
@@ -384,14 +383,26 @@ public class SoaTriviaManager {
 						SoaClientHelper.sendMsgToChannel(msg.getChannel(), msg.getAuthor()
 								.getDisplayName(msg.getGuild())
 								+ ", I got your answer but please PM future answers so others don't see!  I deleted the answer from here");
-						SoaLogging.getLogger().info("Recorded answer from " + msg.getAuthor().getDisplayName(this.msg
-								.getClient().getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId()))) + " and deleted their message.");
+						SoaLogging
+								.getLogger().info(
+										"Recorded answer from "
+												+ msg.getAuthor()
+														.getDisplayName(this.msg.getClient()
+																.getGuildByID(Long.parseLong(
+																		this.trivia.getConfiguration().getServerId())))
+												+ " and deleted their message.");
 					} else {
 						SoaClientHelper.sendMsgToChannel(msg.getChannel(), msg.getAuthor()
 								.getDisplayName(msg.getGuild())
 								+ ", I got your answer but please PM future answers so others don't see!  I can't delete your message, so please delete it so others don't see!");
-						SoaLogging.getLogger().info("Recorded answer from " + msg.getAuthor().getDisplayName(this.msg
-								.getClient().getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId()))) + " but was unable to delete their message in the server.");
+						SoaLogging
+								.getLogger().info(
+										"Recorded answer from "
+												+ msg.getAuthor()
+														.getDisplayName(this.msg.getClient()
+																.getGuildByID(Long.parseLong(
+																		this.trivia.getConfiguration().getServerId())))
+												+ " but was unable to delete their message in the server.");
 					}
 				} else {
 					SoaClientHelper.sendMsgToChannel(msg.getChannel(),
@@ -525,23 +536,13 @@ public class SoaTriviaManager {
 	 * @return True if the member is staff, false if not.
 	 */
 	private boolean isStaff(IMessage msg) {
-		String[] mustHavePermission = new String[] { "Eldar", "Lian", "Arquendi" };
 		if (this.trivia.getConfiguration() == null) {
 			return false;
 		}
-		List<IRole> roleListing = new LinkedList<IRole>(msg.getAuthor().getRolesForGuild(
-				msg.getClient().getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId()))));
-		Iterator<IRole> roleIterator = roleListing.iterator();
-		int i = 0;
+		return SoaClientHelper.isRank(msg,
+				msg.getClient().getGuildByID(Long.parseLong(this.trivia.getConfiguration().getServerId())),
+				DiscordCfgFactory.getConfig().getStaffRoles().getRole());
 
-		while (roleIterator.hasNext()) {
-			IRole role = roleIterator.next();
-			for (i = 0; i < mustHavePermission.length; i++) {
-				if (mustHavePermission[i].equalsIgnoreCase(role.getName()))
-					return true;
-			}
-		}
-		return false;
 	}
 
 }

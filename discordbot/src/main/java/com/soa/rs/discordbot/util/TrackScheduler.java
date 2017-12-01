@@ -31,8 +31,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	}
 
 	/**
-	 * Add the next track to queue or play right away if nothing is in the
-	 * queue.
+	 * Add the next track to queue or play right away if nothing is in the queue.
 	 *
 	 * @param track
 	 *            The track to play or add to queue.

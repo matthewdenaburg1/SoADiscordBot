@@ -32,13 +32,12 @@ public class SoaBotInfoEvent extends AbstractSoaMsgRcvEvent {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.soa.rs.discordbot.bot.events.AbstractSoaMsgRcvEvent#executeEvent()
+	 * @see com.soa.rs.discordbot.bot.events.AbstractSoaMsgRcvEvent#executeEvent()
 	 */
 	@Override
 	public void executeEvent() {
 
-		LocalDateTime launch = DiscordCfgFactory.getConfig().getLaunchTime();
+		LocalDateTime launch = DiscordCfgFactory.getInstance().getLaunchTime();
 		LocalDateTime now = LocalDateTime.now();
 
 		Duration uptime = Duration.between(launch, now);

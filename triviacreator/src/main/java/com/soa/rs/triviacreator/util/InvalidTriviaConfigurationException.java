@@ -4,7 +4,7 @@ package com.soa.rs.triviacreator.util;
  * The InvalidConfigurationException is thrown if the provided configuration is
  * not able to be validated and therefore cannot be used.
  */
-public class InvalidConfigurationException extends Exception {
+public class InvalidTriviaConfigurationException extends Exception {
 
 	/**
 	 * 
@@ -17,7 +17,7 @@ public class InvalidConfigurationException extends Exception {
 	 * @param message
 	 *            The message associated with the exception
 	 */
-	public InvalidConfigurationException(String message) {
+	public InvalidTriviaConfigurationException(String message) {
 		super(message);
 	}
 
@@ -27,7 +27,7 @@ public class InvalidConfigurationException extends Exception {
 	 * @param cause
 	 *            The cause of the exception
 	 */
-	public InvalidConfigurationException(Throwable cause) {
+	public InvalidTriviaConfigurationException(Throwable cause) {
 		super(cause);
 	}
 
@@ -39,7 +39,7 @@ public class InvalidConfigurationException extends Exception {
 	 * @param cause
 	 *            The cause of the exception
 	 */
-	public InvalidConfigurationException(String message, Throwable cause) {
+	public InvalidTriviaConfigurationException(String message, Throwable cause) {
 		super(message, cause);
 	}
 

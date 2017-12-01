@@ -3,6 +3,7 @@ package com.soa.rs.discordbot.bot.events;
 import java.util.List;
 import java.util.TimerTask;
 
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 
@@ -25,8 +26,8 @@ public class SoaNewsListerTask extends TimerTask {
 	 */
 	private IDiscordClient client;
 	/**
-	 * The scheduler for the TimerTask. This is used for the purpose of
-	 * rescheduling the next run.
+	 * The scheduler for the TimerTask. This is used for the purpose of rescheduling
+	 * the next run.
 	 */
 	private SoaNewsListerScheduler scheduler;
 
@@ -62,7 +63,7 @@ public class SoaNewsListerTask extends TimerTask {
 		if (news != null && !news.equals("")) {
 			List<IChannel> channels = client.getChannels();
 			for (IChannel channel : channels) {
-				if (channel.getName().equals("shoutbox")) {
+				if (channel.getName().equals(DiscordCfgFactory.getConfig().getNewsListingEvent().getChannel())) {
 					SoaClientHelper.sendMsgToChannel(channel, news);
 				}
 			}

@@ -1,14 +1,15 @@
-package com.soa.rs.discordbot.cfg;
+package com.soa.rs.discordbot.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.validation.Schema;
@@ -17,7 +18,6 @@ import javax.xml.validation.SchemaFactory;
 import org.xml.sax.SAXException;
 
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
-import com.soa.rs.discordbot.jaxb.ObjectFactory;
 import com.soa.rs.discordbot.jaxb.TrackedInformation;
 
 /**
@@ -27,7 +27,7 @@ import com.soa.rs.discordbot.jaxb.TrackedInformation;
  */
 public class XmlWriter {
 
-	private ObjectFactory objectFactory = new ObjectFactory();
+	// private ObjectFactory objectFactory = new ObjectFactory();
 
 	/**
 	 * Writes out the configuration file.
@@ -56,8 +56,10 @@ public class XmlWriter {
 
 	}
 
-	public void writeTrackedConfiguration(TrackedInformation cfg, String filename) throws JAXBException, SAXException {
+	public void writeTrackedConfiguration(TrackedInformation cfg, String filename)
+			throws JAXBException, SAXException, IOException {
 		File file = new File(filename);
+		File tmpfile = new File(filename + ".tmp");
 		JAXBContext jaxbContext = JAXBContext.newInstance("com.soa.rs.discordbot.jaxb");
 
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -69,9 +71,14 @@ public class XmlWriter {
 		// output pretty printed
 		jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-		JAXBElement<TrackedInformation> element = objectFactory.createTrackedInformation(cfg);
+		// JAXBElement<TrackedInformation> element =
+		// objectFactory.createTrackedInformation(cfg);
 
-		jaxbMarshaller.marshal(element, file);
+		jaxbMarshaller.marshal(cfg, tmpfile);
+
+		if (tmpfile.exists()) {
+			Files.move(tmpfile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
 
 	}
 
@@ -89,9 +96,10 @@ public class XmlWriter {
 		// output pretty printed
 		jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-		JAXBElement<TrackedInformation> element = objectFactory.createTrackedInformation(cfg);
+		// JAXBElement<TrackedInformation> element =
+		// objectFactory.createTrackedInformation(cfg);
 
-		jaxbMarshaller.marshal(element, baos);
+		jaxbMarshaller.marshal(cfg, baos);
 
 		InputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		baos.close();

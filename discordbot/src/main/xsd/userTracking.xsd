@@ -5,13 +5,14 @@
   xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
   jaxb:version="2.0">
   
-  <xsd:element name="tracked-information" type="Tracked-Information"/>
+  <xsd:element name="tracked-information">
   
-  <xsd:complexType name="Tracked-Information">
+  <xsd:complexType>
   <xsd:sequence>
   <xsd:element name="guild" type="Guild" minOccurs="0" maxOccurs="unbounded"/>
   </xsd:sequence>
   </xsd:complexType>
+  </xsd:element>
   
   <xsd:complexType name="Guild">
   <xsd:sequence>

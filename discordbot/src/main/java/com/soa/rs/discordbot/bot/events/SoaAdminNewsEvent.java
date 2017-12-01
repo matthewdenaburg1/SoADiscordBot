@@ -46,8 +46,7 @@ public class SoaAdminNewsEvent extends AbstractSoaMsgRcvEvent {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.soa.rs.discordbot.bot.events.AbstractSoaMsgRcvEvent#executeEvent()
+	 * @see com.soa.rs.discordbot.bot.events.AbstractSoaMsgRcvEvent#executeEvent()
 	 */
 	@Override
 	public void executeEvent() {

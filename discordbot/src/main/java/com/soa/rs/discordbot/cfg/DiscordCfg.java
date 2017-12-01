@@ -8,8 +8,7 @@ import javax.xml.bind.JAXBException;
 import org.xml.sax.SAXException;
 
 import com.soa.rs.discordbot.jaxb.DiscordConfiguration;
-import com.soa.rs.discordbot.util.SoaDiscordBotConstants;
-import com.soa.rs.discordbot.util.SoaLogging;
+import com.soa.rs.discordbot.util.XmlReader;
 
 /**
  * The <tt>DiscordCfg</tt> class is used for storing any configuration which
@@ -17,21 +16,11 @@ import com.soa.rs.discordbot.util.SoaLogging;
  * within this class for easy access from other classes as needed.
  * <p>
  * The DiscordCfg should be created and accessed via
- * {@link DiscordCfgFactory#getConfig()}, and not via directly calling this
+ * {@link DiscordCfgFactory#getInstance()}, and not via directly calling this
  * class.
  */
 
 public class DiscordCfg {
-
-	/**
-	 * The event calendar feed from the SoA forums.
-	 */
-	private String eventForumUrl = null;
-
-	/**
-	 * The Discord Login token used to log in the bot.
-	 */
-	private String token = null;
 
 	/**
 	 * The date the last time that news was posted.
@@ -39,23 +28,29 @@ public class DiscordCfg {
 	private Date newsLastPost = null;
 
 	/**
-	 * The RSS feed URL for SoA News
-	 */
-	private String newsUrl = null;
-
-	/**
 	 * The Uptime of the bot
 	 */
 	private LocalDateTime launchTime = null;
 
-	private String trackingFile = null;
+	private DiscordConfiguration config = null;
+
+	private String botname = null;
+
+	private String avatarUrl = null;
 
 	/**
 	 * Constructor for creating a DiscordCfg. This should never be called within the
 	 * application outside of {@link DiscordCfgFactory}, and instead
-	 * {@link DiscordCfgFactory#getConfig()} should be used.
+	 * {@link DiscordCfgFactory#getInstance()} should be used.
 	 */
 	DiscordCfg() {
+	}
+
+	public DiscordConfiguration getConfig() {
+		if (this.config == null) {
+			this.config = new DiscordConfiguration();
+		}
+		return this.config;
 	}
 
 	/**
@@ -69,59 +64,7 @@ public class DiscordCfg {
 	 */
 	public void loadFromFile(String filename) throws JAXBException, SAXException {
 		XmlReader reader = new XmlReader();
-		DiscordConfiguration cfg = reader.loadAppConfig(filename);
-		loadFromDiscordConfiguration(cfg);
-	}
-
-	/**
-	 * Load an initial configuration from a DiscordConfiguration object
-	 * 
-	 * @param cfg
-	 *            DiscordConfiguration object
-	 */
-	public void loadFromDiscordConfiguration(DiscordConfiguration cfg) {
-		eventForumUrl = cfg.getEventUrl();
-		token = cfg.getDiscordToken();
-		newsUrl = cfg.getNewsUrl();
-		trackingFile = cfg.getTrackingFile();
-	}
-
-	/**
-	 * Retrieve the event calendar feed URL
-	 * 
-	 * @return the event calendar feed URL
-	 */
-	public String getEventCalendarUrl() {
-		return eventForumUrl;
-	}
-
-	/**
-	 * Set the the event calendar feed URL
-	 * 
-	 * @param url
-	 *            the event calendar feed URL
-	 */
-	public void setEventCalendarUrl(String url) {
-		eventForumUrl = url;
-	}
-
-	/**
-	 * Get the Discord login token
-	 * 
-	 * @return the Discord login token
-	 */
-	public String getToken() {
-		return token;
-	}
-
-	/**
-	 * Set the Discord login token
-	 * 
-	 * @param loginToken
-	 *            the Discord login token
-	 */
-	public void setToken(String loginToken) {
-		token = loginToken;
+		this.config = reader.loadAppConfig(filename);
 	}
 
 	/**
@@ -144,25 +87,6 @@ public class DiscordCfg {
 	}
 
 	/**
-	 * Get the news feed URL
-	 * 
-	 * @return the news feed URL
-	 */
-	public String getNewsUrl() {
-		return newsUrl;
-	}
-
-	/**
-	 * Set the news feed URL
-	 * 
-	 * @param newsFeedUrl
-	 *            the news feed URL
-	 */
-	public void setNewsUrl(String newsFeedUrl) {
-		newsUrl = newsFeedUrl;
-	}
-
-	/**
 	 * Get the launch time of the bot
 	 * 
 	 * @return the launch time for the bot
@@ -181,12 +105,20 @@ public class DiscordCfg {
 		this.launchTime = launchTime;
 	}
 
-	public String getTrackingFile() {
-		return trackingFile;
+	public String getBotname() {
+		return botname;
 	}
 
-	public void setTrackingFile(String trackingFile) {
-		this.trackingFile = trackingFile;
+	public void setBotname(String botname) {
+		this.botname = botname;
+	}
+
+	public String getAvatarUrl() {
+		return avatarUrl;
+	}
+
+	public void setAvatarUrl(String avatarUrl) {
+		this.avatarUrl = avatarUrl;
 	}
 
 	/**
@@ -194,20 +126,22 @@ public class DiscordCfg {
 	 * 
 	 * @return true if all parameters are present, false if otherwise.
 	 */
-	public boolean checkNecessaryConfiguration() {
-		if (eventForumUrl == null) {
-			SoaLogging.getLogger().warn("Event calendar URL was null, setting to default");
-			setEventCalendarUrl(SoaDiscordBotConstants.EVENT_CALENDAR_URL);
-		}
-		if (newsUrl == null) {
-			SoaLogging.getLogger().warn("News feed URL was null, setting to default");
-			setNewsUrl(SoaDiscordBotConstants.NEWS_FEED_URL);
-		}
-		if (eventForumUrl != null && newsUrl != null && token != null) {
-			return true;
-		}
-		return false;
-	}
+	// public boolean checkNecessaryConfiguration() {
+	// return true;
+	// if (eventForumUrl == null) {
+	// SoaLogging.getLogger().warn("Event calendar URL was null, setting to
+	// default");
+	// setEventCalendarUrl(SoaDiscordBotConstants.EVENT_CALENDAR_URL);
+	// }
+	// if (newsUrl == null) {
+	// SoaLogging.getLogger().warn("News feed URL was null, setting to default");
+	// setNewsUrl(SoaDiscordBotConstants.NEWS_FEED_URL);
+	// }
+	// if (eventForumUrl != null && newsUrl != null && token != null) {
+	// return true;
+	// }
+	// return false;
+	// }
 
 	/**
 	 * If a parameter is determined to be missing, this function can return in
@@ -216,19 +150,19 @@ public class DiscordCfg {
 	 * 
 	 * @return Missing parameters in String format.
 	 */
-	public String getMissingConfigurationParameter() {
-		StringBuilder sb = new StringBuilder();
-		if (eventForumUrl == null) {
-			sb.append(" - Event Forum Url was missing");
-		}
-		if (newsUrl == null) {
-			sb.append(" - News feed Url was missing");
-		}
-		if (token == null) {
-			sb.append(" - Discord Login token was missing");
-		}
-
-		return sb.toString();
-	}
+	// public String getMissingConfigurationParameter() {
+	// StringBuilder sb = new StringBuilder();
+	// if (eventForumUrl == null) {
+	// sb.append(" - Event Forum Url was missing");
+	// }
+	// if (newsUrl == null) {
+	// sb.append(" - News feed Url was missing");
+	// }
+	// if (token == null) {
+	// sb.append(" - Discord Login token was missing");
+	// }
+	//
+	// return sb.toString();
+	// }
 
 }

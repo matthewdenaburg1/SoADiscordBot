@@ -8,7 +8,7 @@ import com.soa.rs.triviacreator.jaxb.QuestionBank;
 import com.soa.rs.triviacreator.jaxb.TriviaAnswers;
 import com.soa.rs.triviacreator.jaxb.TriviaConfiguration;
 import com.soa.rs.triviacreator.jaxb.TriviaQuestion;
-import com.soa.rs.triviacreator.util.InvalidConfigurationException;
+import com.soa.rs.triviacreator.util.InvalidTriviaConfigurationException;
 
 import sx.blah.discord.api.IDiscordClient;
 
@@ -77,97 +77,97 @@ public class SoaTriviaTest {
 		try {
 
 			manager.validateConfiguration(configuration);
-		} catch (InvalidConfigurationException e) {
+		} catch (InvalidTriviaConfigurationException e) {
 			valid = false;
 		}
 		Assert.assertEquals(valid, true);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testNullTriviaName() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testNullTriviaName() throws InvalidTriviaConfigurationException {
 		String nullString = null;
 		configuration.setTriviaName(nullString);
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testEmptyTriviaName() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testEmptyTriviaName() throws InvalidTriviaConfigurationException {
 		configuration.setTriviaName("");
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testNullServerId() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testNullServerId() throws InvalidTriviaConfigurationException {
 		String nullString = null;
 		configuration.setServerId(nullString);
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testEmptyServerId() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testEmptyServerId() throws InvalidTriviaConfigurationException {
 		configuration.setServerId("");
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testInvalidServerId() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testInvalidServerId() throws InvalidTriviaConfigurationException {
 		configuration.setServerId("wat");
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testNullChannelId() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testNullChannelId() throws InvalidTriviaConfigurationException {
 		String nullString = null;
 		configuration.setChannelId(nullString);
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testEmptyChannelId() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testEmptyChannelId() throws InvalidTriviaConfigurationException {
 		configuration.setChannelId("");
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testInvalidChannelId() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testInvalidChannelId() throws InvalidTriviaConfigurationException {
 		configuration.setChannelId("wat");
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testNegativeWaitTime() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testNegativeWaitTime() throws InvalidTriviaConfigurationException {
 		configuration.setWaitTime(-1);
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testZeroWaitTime() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testZeroWaitTime() throws InvalidTriviaConfigurationException {
 		configuration.setWaitTime(0);
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testNullQuestion() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testNullQuestion() throws InvalidTriviaConfigurationException {
 		String nullString = null;
 		configuration.getQuestionBank().getTriviaQuestion().get(0).setQuestion(nullString);
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testEmptyQuestion() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testEmptyQuestion() throws InvalidTriviaConfigurationException {
 		configuration.getQuestionBank().getTriviaQuestion().get(0).setQuestion("");
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testNullAnswer() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testNullAnswer() throws InvalidTriviaConfigurationException {
 		String nullString = null;
 		configuration.getQuestionBank().getTriviaQuestion().get(0).setAnswer(nullString);
 		manager.validateConfiguration(configuration);
 	}
 
-	@Test(expected = InvalidConfigurationException.class)
-	public void testEmptyAnswer() throws InvalidConfigurationException {
+	@Test(expected = InvalidTriviaConfigurationException.class)
+	public void testEmptyAnswer() throws InvalidTriviaConfigurationException {
 		configuration.getQuestionBank().getTriviaQuestion().get(0).setAnswer("");
 		manager.validateConfiguration(configuration);
 	}

@@ -20,8 +20,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.xml.sax.SAXException;
 
 import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
-import com.soa.rs.discordbot.cfg.XmlReader;
-import com.soa.rs.discordbot.cfg.XmlWriter;
 import com.soa.rs.discordbot.jaxb.CurrentUser;
 import com.soa.rs.discordbot.jaxb.DisplayNames;
 import com.soa.rs.discordbot.jaxb.Guild;
@@ -31,6 +29,8 @@ import com.soa.rs.discordbot.jaxb.LeftUsers;
 import com.soa.rs.discordbot.jaxb.TrackedInformation;
 import com.soa.rs.discordbot.util.DateAnalyzer;
 import com.soa.rs.discordbot.util.SoaLogging;
+import com.soa.rs.discordbot.util.XmlReader;
+import com.soa.rs.discordbot.util.XmlWriter;
 
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IGuild;
@@ -38,36 +38,85 @@ import sx.blah.discord.handle.obj.IPresence;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.handle.obj.StatusType;
 
+/**
+ * The UserTrackingUpdater handles all interactions with the tracking database.
+ * This includes loading it, populating it on a regular basis, making any
+ * modifications needed to it, and retrieving requested information from it.
+ */
 public class UserTrackingUpdater {
 
+	/**
+	 * Singleton class instance
+	 */
 	private static final UserTrackingUpdater INSTANCE = new UserTrackingUpdater();
 
+	/**
+	 * Discord client in use
+	 */
 	private IDiscordClient client;
+
+	/**
+	 * Xml Writer for user tracking file
+	 */
 	private XmlWriter writer = new XmlWriter();
+
+	/**
+	 * Xml Reader for initial load of user tracking file
+	 */
 	private XmlReader reader = new XmlReader();
 
+	/**
+	 * Object to hold all tracked information
+	 */
 	private TrackedInformation information = null;
 
+	/**
+	 * Empty constructor for use to enforce singleton instance.
+	 */
 	private UserTrackingUpdater() {
 
 	}
 
+	/**
+	 * Returns the singleton user tracking instance
+	 * 
+	 * @return user tracking instance
+	 */
 	public static UserTrackingUpdater getInstance() {
 		return INSTANCE;
 	}
 
-	public IDiscordClient getClient() {
-		return client;
-	}
-
+	/**
+	 * Sets the discord client
+	 * 
+	 * @param client
+	 *            The discord client in use.
+	 */
 	public void setClient(IDiscordClient client) {
 		this.client = client;
 	}
 
+	/**
+	 * Sets the currently in use tracked information. In normal operation, this
+	 * method is not used.
+	 * 
+	 * @param information
+	 *            User tracking information to be used
+	 */
+	void setInformation(TrackedInformation information) {
+		this.information = information;
+	}
+
+	/**
+	 * Load the tracking information from the configured file. This call will only
+	 * work if the information is set to null; after the first load, there is no
+	 * need to call this method again, and it will not re-load the file.
+	 */
 	public synchronized void loadInformation() {
 		if (information == null) {
 			try {
-				this.information = reader.loadTrackedConfiguration(DiscordCfgFactory.getConfig().getTrackingFile());
+				this.information = reader.loadTrackedConfiguration(
+						DiscordCfgFactory.getConfig().getUserTrackingEvent().getTrackingFile());
 			} catch (JAXBException | SAXException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -76,9 +125,18 @@ public class UserTrackingUpdater {
 		}
 	}
 
+	/**
+	 * Populates the user tracking information object. This will iterate through all
+	 * connected guilds and update information for all users. This method is
+	 * intended to be scheduled on a regular basis to keep the information up to
+	 * date. This method will write out information to the tracking file once
+	 * completed, if a file is configured.
+	 */
 	public synchronized void populateInformation() {
+		SoaLogging.getLogger().info("Running User Tracking Updater task.");
 		List<IGuild> guilds = this.client.getGuilds();
 		for (IGuild guild : guilds) {
+			SoaLogging.getLogger().debug("Updating user information for guild: " + guild.getName());
 			long guildId = guild.getLongID();
 			boolean guildExists = false;
 			for (Guild savedGuild : this.information.getGuild()) {
@@ -89,20 +147,28 @@ public class UserTrackingUpdater {
 				}
 			}
 			if (!guildExists) {
-				updateGuildListing(guildId, guild);
+				updateGuildListing(guild);
 			}
 		}
 		try {
-			writer.writeTrackedConfiguration(information, DiscordCfgFactory.getConfig().getTrackingFile());
-		} catch (JAXBException | SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			if (DiscordCfgFactory.getConfig().getUserTrackingEvent().getTrackingFile() != null) {
+				writer.writeTrackedConfiguration(information,
+						DiscordCfgFactory.getConfig().getUserTrackingEvent().getTrackingFile());
+			}
+		} catch (JAXBException | SAXException | IOException e) {
+			SoaLogging.getLogger().error("Error writing out user information file: " + e.getMessage(), e);
 		}
 	}
 
-	private void updateGuildListing(long guildId, IGuild guild) {
+	/**
+	 * Adds a new guild to the tracking file
+	 * 
+	 * @param guild
+	 *            Discord object identifying the guild.
+	 */
+	private void updateGuildListing(IGuild guild) {
 		Guild newGuild = new Guild();
-		newGuild.setGuildId(guildId);
+		newGuild.setGuildId(guild.getLongID());
 		newGuild.setGuildName(guild.getName());
 		newGuild.setGuildUsers(new GuildUsers());
 		newGuild.setLeftUsers(new LeftUsers());
@@ -110,12 +176,23 @@ public class UserTrackingUpdater {
 		this.information.getGuild().add(newGuild);
 	}
 
+	/**
+	 * Updates the information for the guild of users who are currently within the
+	 * guild.
+	 * 
+	 * @param ourGuild
+	 *            Internal tracking information for the guild being reviewed
+	 * @param guild
+	 *            Discord4J information for the guild being reviewed
+	 * @return The updated guild object.
+	 */
 	private Guild updateGuildListing(Guild ourGuild, IGuild guild) {
 		List<IUser> users = guild.getUsers();
 		for (IUser user : users) {
 			int position = getUserPosition(ourGuild, user);
 			if (position != -1) {
 				try {
+					SoaLogging.getLogger().trace("User " + user.getName() + " in list, updating details.");
 					CurrentUser curUser = ourGuild.getGuildUsers().getUser().get(position);
 					curUser.setUserName("@" + user.getName() + "#" + user.getDiscriminator());
 					if (isNewDisplayName(curUser.getDisplayNames(), user.getDisplayName(guild))) {
@@ -131,6 +208,7 @@ public class UserTrackingUpdater {
 
 			} else {
 				try {
+					SoaLogging.getLogger().trace("User " + user.getName() + " not in list, adding.");
 					CurrentUser curUser = new CurrentUser();
 
 					curUser.setUserId(user.getLongID());
@@ -155,6 +233,15 @@ public class UserTrackingUpdater {
 		return ourGuild;
 	}
 
+	/**
+	 * Updates the information for the guild of users who have left the guild.
+	 * 
+	 * @param ourGuild
+	 *            Internal tracking information for the guild being reviewed
+	 * @param guild
+	 *            Discord4J information for the guild being reviewed
+	 * @return The updated guild object.
+	 */
 	private Guild updateLeftListing(Guild ourGuild, IGuild guild) {
 		List<IUser> users = guild.getUsers();
 
@@ -168,12 +255,13 @@ public class UserTrackingUpdater {
 				IUser checkUser = iter.next();
 				SoaLogging.getLogger().trace("Our User " + user.getUserId() + " DiscordUser " + checkUser.getLongID());
 				if (checkUser.getLongID() == user.getUserId()) {
-					SoaLogging.getLogger().trace("This person has not left");
+					SoaLogging.getLogger().trace("This person has not left.");
 					hasLeft = false;
 				}
 			}
 			if (hasLeft) {
 				try {
+					SoaLogging.getLogger().trace("User " + user.getUserName() + " has left, adding as left user.");
 					LeftUser leftUser = new LeftUser();
 					leftUser.setUserId(user.getUserId());
 					leftUser.setUserName(user.getUserName());
@@ -202,6 +290,16 @@ public class UserTrackingUpdater {
 		return ourGuild;
 	}
 
+	/**
+	 * Gets the user's position within the guild.
+	 * 
+	 * @param ourGuild
+	 *            Internal tracking information for the guild being reviewed
+	 * @param user
+	 *            Discord4J user object being searched for.
+	 * @return The position within the internal tracking for the user if they exist,
+	 *         -1 otherwise.
+	 */
 	private int getUserPosition(Guild ourGuild, IUser user) {
 		int position = -1;
 		Iterator<CurrentUser> iter = ourGuild.getGuildUsers().getUser().iterator();
@@ -218,6 +316,15 @@ public class UserTrackingUpdater {
 		return -1;
 	}
 
+	/**
+	 * Checks if the user has a new display name or not.
+	 * 
+	 * @param displayNames
+	 *            Listing of all past recorded display names
+	 * @param name
+	 *            The current dispaly name
+	 * @return True if they do have a new display name, false otherwise.
+	 */
 	private boolean isNewDisplayName(DisplayNames displayNames, String name) {
 		Iterator<String> iter = displayNames.getDisplayName().iterator();
 		while (iter.hasNext()) {
@@ -229,16 +336,41 @@ public class UserTrackingUpdater {
 		return true;
 	}
 
+	/**
+	 * Converts a <tt>LocalDateTime</tt> into a <tt>XMLGregorianCalendar</tt>.
+	 * 
+	 * @param dateTime
+	 *            Date to be converted
+	 * @return The converted date
+	 * @throws DatatypeConfigurationException
+	 *             If the date cannot be converted for some reason.
+	 */
 	private XMLGregorianCalendar convertDateToCal(LocalDateTime dateTime) throws DatatypeConfigurationException {
 		XMLGregorianCalendar calendar = DatatypeFactory.newInstance()
 				.newXMLGregorianCalendar(dateTime.toLocalDate().toString());
 		return calendar;
 	}
 
+	/**
+	 * Converts the current date into a <tt>XMLGregorianCalendar</tt>
+	 * 
+	 * @return The converted date
+	 * @throws DatatypeConfigurationException
+	 *             If the date cannot be converted for some reason.
+	 */
 	private XMLGregorianCalendar getCurrentDate() throws DatatypeConfigurationException {
 		return getDate(new Date());
 	}
 
+	/**
+	 * Converts the specified date into a <tt>XMLGregorianCalendar</tt>
+	 * 
+	 * @param date
+	 *            The date to be converted
+	 * @return The converted date
+	 * @throws DatatypeConfigurationException
+	 *             If the date cannot be converted for some reason.
+	 */
 	private XMLGregorianCalendar getDate(Date date) throws DatatypeConfigurationException {
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(date);
@@ -247,6 +379,15 @@ public class UserTrackingUpdater {
 		return date2;
 	}
 
+	/**
+	 * Adds a known name a specified user.
+	 * 
+	 * @param search
+	 *            The name to search for
+	 * @param name
+	 *            The name to attach to the user
+	 * @return True if the operation was successful, false otherwise.
+	 */
 	public synchronized boolean addKnownNameToUser(String search, String name) {
 		boolean updated = false;
 
@@ -264,6 +405,18 @@ public class UserTrackingUpdater {
 		return updated;
 	}
 
+	/**
+	 * Searches for a user within the tracked information.
+	 * 
+	 * @param search
+	 *            The string to search for
+	 * @param mustEqual
+	 *            Boolean detailing whether the string should match the entry
+	 *            exactly to be considered a result, or just be contained within to
+	 *            be a result.
+	 * @return A map containing entries with the user object and the guild ID that
+	 *         they were found in.
+	 */
 	public Map<CurrentUser, Long> searchUsers(String search, boolean mustEqual) {
 		Map<CurrentUser, Long> searchedUsers = new HashMap<CurrentUser, Long>();
 
@@ -288,7 +441,8 @@ public class UserTrackingUpdater {
 					}
 				} else {
 					// For search
-					if (user.getUserName().contains(search) || user.getKnownName().contains(search)) {
+					if (user.getUserName().contains(search)
+							|| (user.getKnownName() != null && user.getKnownName().contains(search))) {
 						searchedUsers.put(user, savedGuild.getGuildId());
 					} else {
 						Iterator<String> displayNamesIter = user.getDisplayNames().getDisplayName().iterator();
@@ -307,6 +461,17 @@ public class UserTrackingUpdater {
 		return searchedUsers;
 	}
 
+	/**
+	 * Writes the tracked information to a stream and returns the stream
+	 * 
+	 * @return A stream containing the tracked information.
+	 * @throws JAXBException
+	 *             If an error occurs marshalling out the data
+	 * @throws IOException
+	 *             If an error occurs when writing the data to the stream.
+	 * @throws SAXException
+	 *             If an error occurs marshalling out the data
+	 */
 	public InputStream writeInfoToStream() throws JAXBException, IOException, SAXException {
 		return this.writer.writeTrackedConfigurationToStream(information);
 	}

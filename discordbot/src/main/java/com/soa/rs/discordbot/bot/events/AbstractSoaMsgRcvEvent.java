@@ -1,14 +1,11 @@
 package com.soa.rs.discordbot.bot.events;
 
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.soa.rs.discordbot.util.NoDefinedRolesException;
+import com.soa.rs.discordbot.util.SoaClientHelper;
 
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IRole;
 
 /**
  * This abstract class can be used by MessageReceivedEvents for some convienence
@@ -22,10 +19,10 @@ public abstract class AbstractSoaMsgRcvEvent {
 	private MessageReceivedEvent event;
 
 	/**
-	 * List of ranks of which the user who triggered the event must be in order
-	 * to execute it.
+	 * List of ranks of which the user who triggered the event must be in order to
+	 * execute it.
 	 */
-	private String[] mustHavePermission = null;
+	private List<String> mustHavePermission = null;
 
 	/**
 	 * Constructor
@@ -62,13 +59,13 @@ public abstract class AbstractSoaMsgRcvEvent {
 	 * @param ranks
 	 *            an array of ranks which can execute this command.
 	 */
-	public void setMustHavePermission(String[] ranks) {
+	public void setMustHavePermission(List<String> ranks) {
 		this.mustHavePermission = ranks;
 	}
 
 	/**
-	 * Checks if the user who has triggered the event is permitted to execute
-	 * this event
+	 * Checks if the user who has triggered the event is permitted to execute this
+	 * event
 	 * 
 	 * @return true if the user may execute the event, false otherwise.
 	 * @throws NoDefinedRolesException
@@ -78,22 +75,13 @@ public abstract class AbstractSoaMsgRcvEvent {
 		if (mustHavePermission == null) {
 			throw new NoDefinedRolesException("No ranks for which to limit this event to have been specified.");
 		}
-		IGuild guild = event.getMessage().getGuild();
-		if (guild == null) {
-				return false;
-		}
-		List<IRole> roleListing = new LinkedList<IRole>(event.getMessage().getAuthor().getRolesForGuild(guild));
-		Iterator<IRole> roleIterator = roleListing.iterator();
-		int i = 0;
 
-		while (roleIterator.hasNext()) {
-			IRole role = roleIterator.next();
-			for (i = 0; i < mustHavePermission.length; i++) {
-				if (mustHavePermission[i].equalsIgnoreCase(role.getName()))
-					return true;
-			}
+		if (SoaClientHelper.isRank(event.getMessage(), mustHavePermission)) {
+			return true;
+		} else {
+			return false;
 		}
-		return false;
+
 	}
 
 	/**

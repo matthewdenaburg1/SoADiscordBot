@@ -1,6 +1,7 @@
 package com.soa.rs.discordbot.util;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -114,6 +115,14 @@ public class SoaClientHelper {
 		});
 	}
 
+	/**
+	 * Sends an embed to a channel
+	 * 
+	 * @param channel
+	 *            The channel to send the message to
+	 * @param msg
+	 *            The embed to be sent to the channel
+	 */
 	public static void sendEmbedToChannel(IChannel channel, EmbedBuilder msg) {
 		RequestBuffer.request(() -> {
 			try {
@@ -124,6 +133,14 @@ public class SoaClientHelper {
 		});
 	}
 
+	/**
+	 * Formats a user's Discord name in the format of @user#name, which is the
+	 * format Discord uses for names.
+	 * 
+	 * @param user
+	 *            The user for whom to get the name for
+	 * @return The formatted name
+	 */
 	public static String getDiscordUserNameForUser(IUser user) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("@");
@@ -134,6 +151,12 @@ public class SoaClientHelper {
 		return sb.toString();
 	}
 
+	/**
+	 * Deletes a message from a channel
+	 * 
+	 * @param msg
+	 *            The message to be deleted.
+	 */
 	public static void deleteMessageFromChannel(IMessage msg) {
 		RequestBuffer.request(() -> {
 			try {
@@ -196,13 +219,62 @@ public class SoaClientHelper {
 		});
 	}
 
+	/**
+	 * Checks if the user who sent the message has the appropriate rank
+	 * 
+	 * @param msg
+	 *            The message sent by the user
+	 * @param roleString
+	 *            A string containing the role to check for
+	 * @return True if the user has the rank, false otherwise
+	 */
 	public static boolean isRank(IMessage msg, String roleString) {
-		String[] roleStrings = new String[] { roleString };
-		return isRank(msg, roleStrings);
+		return isRank(msg, msg.getGuild(), roleString);
 	}
 
-	public static boolean isRank(IMessage msg, String[] roleStrings) {
-		IGuild guild = msg.getGuild();
+	/**
+	 * Checks if the user who sent the message has the appropriate rank
+	 * 
+	 * @param msg
+	 *            The message sent by the user
+	 * @param guild
+	 *            The guild to check for
+	 * @param roleString
+	 *            A string containing the role to check for
+	 * @return True if the user has the rank, false otherwise
+	 */
+	public static boolean isRank(IMessage msg, IGuild guild, String roleString) {
+		List<String> roleStrings = new ArrayList<String>();
+		roleStrings.add(roleString);
+		return isRank(msg, guild, roleStrings);
+	}
+
+	/**
+	 * Checks if the user who sent the message has the appropriate rank
+	 * 
+	 * @param msg
+	 *            The message sent by the user
+	 * @param roleStrings
+	 *            A list of roles to check if the user has
+	 * @return True if the user has one of the roles, false otherwise
+	 */
+	public static boolean isRank(IMessage msg, List<String> roleStrings) {
+		return isRank(msg, msg.getGuild(), roleStrings);
+
+	}
+
+	/**
+	 * Checks if the user who sent the message has the appropriate rank
+	 * 
+	 * @param msg
+	 *            The message sent by the user
+	 * @param guild
+	 *            The guild to check for
+	 * @param roleStrings
+	 *            A list of roles to check if the user has
+	 * @return True if the user has one of the roles, false otherwise
+	 */
+	public static boolean isRank(IMessage msg, IGuild guild, List<String> roleStrings) {
 		List<IRole> roleListing = new LinkedList<IRole>(msg.getAuthor().getRolesForGuild(guild));
 		Iterator<IRole> roleIterator = roleListing.iterator();
 
@@ -214,6 +286,25 @@ public class SoaClientHelper {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Formats a list of roles into a comma separated list in a string
+	 * 
+	 * @param roles
+	 *            The list of roles
+	 * @return A string listing each role, separated by a comma.
+	 */
+	public static String translateRoleList(List<String> roles) {
+		Iterator<String> iter = roles.iterator();
+		StringBuilder sb = new StringBuilder();
+		while (iter.hasNext()) {
+			sb.append(iter.next());
+			if (iter.hasNext()) {
+				sb.append(", ");
+			}
+		}
+		return sb.toString();
 	}
 
 }

@@ -2,8 +2,6 @@ package com.soa.rs.discordbot.bot.events;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
@@ -14,6 +12,7 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.GuildMusicManager;
 import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
@@ -23,7 +22,6 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IVoiceChannel;
 import sx.blah.discord.util.MissingPermissionsException;
 
@@ -105,16 +103,28 @@ public class SoaMusicPlayer {
 		if (disableRankCheck) {
 			return true;
 		}
-		List<IRole> roleListing = new LinkedList<IRole>(event.getMessage().getAuthor().getRolesForGuild(guild));
-		Iterator<IRole> roleIterator = roleListing.iterator();
 
-		while (roleIterator.hasNext()) {
-			IRole role = roleIterator.next();
-			if (role.getName().equalsIgnoreCase("Eldar") || role.getName().equalsIgnoreCase("Lian")
-					|| role.getName().equalsIgnoreCase("Arquendi") || role.getName().equalsIgnoreCase("DJ"))
-				return true;
+		/*
+		 * If no roles are specified in the config, assume that all are allowed to
+		 * activate the player
+		 */
+		if (DiscordCfgFactory.getConfig().getMusicPlayer().getAllowedRoles() == null) {
+			return true;
 		}
+
+		/*
+		 * Check if the user has one of the roles listed within the config
+		 */
+		if (SoaClientHelper.isRank(event.getMessage(),
+				DiscordCfgFactory.getConfig().getMusicPlayer().getAllowedRoles().getRole())) {
+			return true;
+		}
+
+		/*
+		 * User does not meet the critera, reject
+		 */
 		return false;
+
 	}
 
 	/**
@@ -133,7 +143,9 @@ public class SoaMusicPlayer {
 			sb.append(event.getMessage().getAuthor().getName());
 			sb.append(" attempted to run a music command but did not have the appropriate rank.");
 			SoaLogging.getLogger().info(sb.toString());
-			sendMessageToChannel(msg.getChannel(), "Sorry, only Arquendi+ or DJ rank can run the music player");
+			sendMessageToChannel(msg.getChannel(),
+					"Sorry, only the following roles can run the music player: " + SoaClientHelper.translateRoleList(
+							DiscordCfgFactory.getConfig().getMusicPlayer().getAllowedRoles().getRole()));
 			return;
 		}
 
@@ -210,7 +222,8 @@ public class SoaMusicPlayer {
 		}
 		if (message.equalsIgnoreCase("disableRankCheck")) {
 
-			if (SoaClientHelper.isRank(msg, "Eldar")) {
+			if (SoaClientHelper.isRank(msg,
+					DiscordCfgFactory.getConfig().getMusicPlayer().getCanDisableRankCheck().getRole())) {
 				if (args[2].equals("true")) {
 					disableRankCheck = true;
 				} else if (args[2].equals("false")) {
@@ -384,8 +397,16 @@ public class SoaMusicPlayer {
 		StringBuilder sb = new StringBuilder();
 		sb.append("```Help: Music (command: .music [args])\n");
 		if (!disableRankCheck) {
-			sb.append(
-					"Note - This menu and these commands will only work for users assigned the role \"Eldar\", \"Lian\", \"Arquendi\", or \"DJ\"\n\n");
+
+			if (DiscordCfgFactory.getConfig().getMusicPlayer().getAllowedRoles() != null) {
+				sb.append(
+						"Note - This menu and these commands will only work for users assigned one of the following roles: "
+								+ SoaClientHelper.translateRoleList(
+										DiscordCfgFactory.getConfig().getMusicPlayer().getAllowedRoles().getRole())
+								+ "\n\n");
+
+			}
+
 		}
 		sb.append(".music join - Bot joins the voice channel you are in.\n");
 		sb.append(".music play <url> - Bot queues up the URL provided.\n");

@@ -3,6 +3,7 @@ package com.soa.rs.discordbot.bot.events;
 import java.util.List;
 import java.util.TimerTask;
 
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 
@@ -27,14 +28,14 @@ public class SoaEventListerTask extends TimerTask {
 	private String url;
 
 	/**
-	 * The channel from which the command was entered. This is used for
-	 * returning the task's output back to the correct channel.
+	 * The channel from which the command was entered. This is used for returning
+	 * the task's output back to the correct channel.
 	 */
 	private IChannel channel = null;
 
 	/**
-	 * The scheduler for the TimerTask. This is used for the purpose of
-	 * rescheduling the next run.
+	 * The scheduler for the TimerTask. This is used for the purpose of rescheduling
+	 * the next run.
 	 */
 	private SoaEventListerScheduler scheduler = null;
 
@@ -44,8 +45,8 @@ public class SoaEventListerTask extends TimerTask {
 	private IDiscordClient client;
 
 	/**
-	 * This constructor is used for running the task as a TimerTask, and is used
-	 * by the <tt>ReadyEventListener</tt>.
+	 * This constructor is used for running the task as a TimerTask, and is used by
+	 * the <tt>ReadyEventListener</tt>.
 	 * 
 	 * @param url
 	 *            The URL of the event feed from the forums.
@@ -63,8 +64,8 @@ public class SoaEventListerTask extends TimerTask {
 	}
 
 	/**
-	 * This constructor is used for running the task from a command entered into
-	 * a Discord channel.
+	 * This constructor is used for running the task from a command entered into a
+	 * Discord channel.
 	 * 
 	 * @param url
 	 *            The URL of the event feed from the forums.
@@ -115,7 +116,7 @@ public class SoaEventListerTask extends TimerTask {
 			if (this.scheduler != null) {
 				List<IChannel> channels = client.getChannels();
 				for (IChannel channel : channels) {
-					if (channel.getName().equals("events")) {
+					if (channel.getName().equals(DiscordCfgFactory.getConfig().getEventListingEvent().getChannel())) {
 						SoaClientHelper.sendMsgToChannel(channel, events);
 					}
 				}

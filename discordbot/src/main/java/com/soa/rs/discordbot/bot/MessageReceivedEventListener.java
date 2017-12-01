@@ -54,14 +54,17 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 			 * Music Player Command
 			 */
 			if (args[0].equalsIgnoreCase("music")) {
-				if (player == null) {
-					player = new SoaMusicPlayer(msg);
-				}
-				try {
-					player.setMsg(msg);
-					player.handleMusicArgs(event, args);
-				} catch (Exception e) {
-					SoaLogging.getLogger().error("Exception thrown in MusicPlayer", e);
+				if (DiscordCfgFactory.getConfig().getMusicPlayer() != null
+						&& DiscordCfgFactory.getConfig().getMusicPlayer().isEnabled()) {
+					if (player == null) {
+						player = new SoaMusicPlayer(msg);
+					}
+					try {
+						player.setMsg(msg);
+						player.handleMusicArgs(event, args);
+					} catch (Exception e) {
+						SoaLogging.getLogger().error("Exception thrown in MusicPlayer", e);
+					}
 				}
 			}
 
@@ -69,22 +72,29 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 			 * Event Lister command
 			 */
 			else if (args[0].equalsIgnoreCase("events")) {
-				if (eventListerTask == null) {
-					eventListerTask = new SoaEventListerTask(DiscordCfgFactory.getConfig().getEventCalendarUrl(),
-							event.getClient(), msg.getChannel());
-					eventListerTask.run();
-				} else {
-					eventListerTask.setChannel(msg.getChannel());
-					eventListerTask.run();
+				if (DiscordCfgFactory.getConfig().getEventListingEvent() != null
+						&& DiscordCfgFactory.getConfig().getEventListingEvent().isEnabled()) {
+					if (eventListerTask == null) {
+						eventListerTask = new SoaEventListerTask(
+								DiscordCfgFactory.getConfig().getEventListingEvent().getUrl(), event.getClient(),
+								msg.getChannel());
+						eventListerTask.run();
+					} else {
+						eventListerTask.setChannel(msg.getChannel());
+						eventListerTask.run();
+					}
 				}
 			}
 
 			else if (args[0].equalsIgnoreCase("trivia")) {
-				if (triviaManager == null) {
-					triviaManager = new SoaTriviaManager();
+				if (DiscordCfgFactory.getConfig().getTrivia() != null
+						&& DiscordCfgFactory.getConfig().getTrivia().isEnabled()) {
+					if (triviaManager == null) {
+						triviaManager = new SoaTriviaManager();
+					}
+					triviaManager.setMsg(msg);
+					triviaManager.executeCmd(args);
 				}
-				triviaManager.setMsg(msg);
-				triviaManager.executeCmd(args);
 			}
 
 			else if (args[0].equalsIgnoreCase("info")) {
@@ -93,16 +103,24 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 			}
 
 			else if (args[0].equalsIgnoreCase("adminnews")) {
-				SoaAdminNewsEvent newsEvent = new SoaAdminNewsEvent(event);
-				newsEvent.setMustHavePermission(new String[] { "Eldar", "Lian" });
-				newsEvent.setArgs(args);
-				newsEvent.executeEvent();
+				if (DiscordCfgFactory.getConfig().getAdminEvent() != null
+						&& DiscordCfgFactory.getConfig().getAdminEvent().isEnabled()) {
+					SoaAdminNewsEvent newsEvent = new SoaAdminNewsEvent(event);
+					newsEvent.setMustHavePermission(
+							DiscordCfgFactory.getConfig().getAdminEvent().getAllowedRoles().getRole());
+					newsEvent.setArgs(args);
+					newsEvent.executeEvent();
+				}
 			}
 
 			else if (args[0].equalsIgnoreCase("user")) {
-				UserTrackingQuery queryEvent = new UserTrackingQuery(event);
-				queryEvent.setArgs(args);
-				queryEvent.executeEvent();
+				if (DiscordCfgFactory.getConfig().getUserTrackingEvent() != null
+						&& DiscordCfgFactory.getConfig().getUserTrackingEvent().isEnabled()) {
+					UserTrackingQuery queryEvent = new UserTrackingQuery(event);
+					queryEvent.setArgs(args);
+					queryEvent.executeEvent();
+				}
+
 			}
 
 			else if (args[0].equalsIgnoreCase("help")) {
@@ -112,8 +130,11 @@ public class MessageReceivedEventListener implements IListener<MessageReceivedEv
 		} else if (msg.getContent().toLowerCase().contains("dj pls")
 				|| msg.getContent().toLowerCase().contains("dj is a noob")
 				|| msg.getContent().toLowerCase().contains("dj is a nublet")) {
-			SoaDjPlsEvent djPlsEvent = new SoaDjPlsEvent(event);
-			djPlsEvent.executeEvent();
+			if (DiscordCfgFactory.getConfig().getDjPlsEvent() != null
+					&& DiscordCfgFactory.getConfig().getDjPlsEvent().isEnabled()) {
+				SoaDjPlsEvent djPlsEvent = new SoaDjPlsEvent(event);
+				djPlsEvent.executeEvent();
+			}
 		}
 
 	}
