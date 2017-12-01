@@ -13,6 +13,7 @@ import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.EmbedBuilder;
 
@@ -61,7 +62,11 @@ public class UserTrackingQuery extends AbstractSoaMsgRcvEvent {
 				searchUsers();
 			} else if (args[1].equalsIgnoreCase("sendfile")) {
 				sendTrackingFileToUser();
+			} else {
+				sendHelp();
 			}
+		} else {
+			sendHelp();
 		}
 	}
 
@@ -71,11 +76,23 @@ public class UserTrackingQuery extends AbstractSoaMsgRcvEvent {
 	 */
 	private void searchUsers() {
 		String searchTerm = null;
+		long id = DiscordCfgFactory.getConfig().getDefaultGuildId();
 		Map<CurrentUser, Long> resultSet = null;
 		StringBuilder sb = new StringBuilder();
 		SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
 
 		searchTerm = getEvent().getMessage().getContent().substring(13);
+		if (searchTerm.contains("-server")) {
+			id = getServerId(searchTerm);
+			searchTerm = searchTerm.substring(0, searchTerm.indexOf("-server") - 1);
+			SoaLogging.getLogger().debug("Searchterm updated to " + searchTerm);
+		}
+		if (id == 0) {
+			SoaLogging.getLogger().error("User searched for invalid server");
+			SoaClientHelper.sendMsgToChannel(getEvent().getChannel(),
+					"We didn't recognize the server that was entered");
+			return;
+		}
 		SoaLogging.getLogger().info("Search term: " + searchTerm);
 		resultSet = UserTrackingUpdater.getInstance().searchUsers(searchTerm, false);
 
@@ -91,38 +108,39 @@ public class UserTrackingQuery extends AbstractSoaMsgRcvEvent {
 			Iterator<Entry<CurrentUser, Long>> mapIter = resultSet.entrySet().iterator();
 			while (mapIter.hasNext()) {
 				Map.Entry<CurrentUser, Long> entry = mapIter.next();
-				EmbedBuilder builder = new EmbedBuilder();
+				if (entry.getValue().longValue() == id) {
+					EmbedBuilder builder = new EmbedBuilder();
 
-				CurrentUser user = entry.getKey();
+					CurrentUser user = entry.getKey();
 
-				builder.withTitle(getEvent().getClient().getUserByID(user.getUserId())
-						.getDisplayName(getEvent().getClient().getGuildByID(entry.getValue().longValue())));
-				builder.withDesc(
-						SoaClientHelper.getDiscordUserNameForUser(getEvent().getClient().getUserByID(user.getUserId()))
-								+ " in  server: "
-								+ getEvent().getClient().getGuildByID(entry.getValue().longValue()).getName());
-				if (user.getKnownName() != null) {
-					builder.appendField("Known Name", user.getKnownName(), false);
-				}
-				sb.setLength(0);
-				Iterator<String> iter = user.getDisplayNames().getDisplayName().iterator();
-				while (iter.hasNext()) {
-					String name = iter.next();
-					sb.append(name);
-					if (iter.hasNext()) {
-						sb.append(", ");
+					builder.withTitle(getEvent().getClient().getUserByID(user.getUserId())
+							.getDisplayName(getEvent().getClient().getGuildByID(entry.getValue().longValue())));
+					builder.withDesc(SoaClientHelper.getDiscordUserNameForUser(
+							getEvent().getClient().getUserByID(user.getUserId())) + " in  server: "
+							+ getEvent().getClient().getGuildByID(entry.getValue().longValue()).getName());
+					if (user.getKnownName() != null) {
+						builder.appendField("Known Name", user.getKnownName(), false);
 					}
+					sb.setLength(0);
+					Iterator<String> iter = user.getDisplayNames().getDisplayName().iterator();
+					while (iter.hasNext()) {
+						String name = iter.next();
+						sb.append(name);
+						if (iter.hasNext()) {
+							sb.append(", ");
+						}
+					}
+					builder.appendField("All display names", sb.toString(), false);
+
+					builder.appendField("Joined server date",
+							sdf.format(user.getJoined().toGregorianCalendar().getTime()), true);
+					builder.appendField("Last seen date",
+							sdf.format(user.getLastOnline().toGregorianCalendar().getTime()), true);
+
+					// Send Embed
+
+					SoaClientHelper.sendEmbedToChannel(getEvent().getChannel(), builder);
 				}
-				builder.appendField("All display names", sb.toString(), false);
-
-				builder.appendField("Joined server date", sdf.format(user.getJoined().toGregorianCalendar().getTime()),
-						true);
-				builder.appendField("Last seen date", sdf.format(user.getLastOnline().toGregorianCalendar().getTime()),
-						true);
-
-				// Send Embed
-
-				SoaClientHelper.sendEmbedToChannel(getEvent().getChannel(), builder);
 
 			}
 		} else {
@@ -216,6 +234,24 @@ public class UserTrackingQuery extends AbstractSoaMsgRcvEvent {
 		}
 	}
 
+	public void sendHelp() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("```Help: User Tracking\n");
+		sb.append(
+				".user search <searchphrase> [-server <servername>] - Searches and displays information about the searched user.  Optionally, the server name of the server to be searched for can be provided.  If not provided, the configured default server is used.\n");
+		sb.append(".user setKnownName <name> or .user setKnownUser <name> - Adds a recognizable name to the user.\n");
+		sb.append(".user sendfile - Sends a copy of the tracking XML file to the user.\n");
+		sb.append("\n");
+		sb.append(
+				"Note: sendFile and setKnownName may only be run by the following users: "
+						+ SoaClientHelper.translateRoleList(
+								DiscordCfgFactory.getConfig().getUserTrackingEvent().getCanUpdateQuery().getRole())
+						+ "\n");
+		sb.append("```");
+
+		SoaClientHelper.sendMsgToChannel(getEvent().getMessage().getChannel(), sb.toString());
+	}
+
 	/**
 	 * Retrieves the first mentioned user if one was deemed to be mentioned.
 	 * 
@@ -231,6 +267,23 @@ public class UserTrackingQuery extends AbstractSoaMsgRcvEvent {
 			name = SoaClientHelper.getDiscordUserNameForUser(mentionedUsers.get(0));
 		}
 		return name;
+	}
+
+	/**
+	 * If a server has been provided, fetch the ID
+	 * 
+	 * @param searchTerm
+	 *            The search string
+	 * @return long ID of the server, or 0 if the server is not one the bot is
+	 *         connected to.
+	 */
+	private long getServerId(String searchTerm) {
+		int startindex = searchTerm.indexOf("-server");
+		String serverName = searchTerm.substring(startindex + 8);
+		IGuild guild = SoaClientHelper.findGuildByName(getEvent().getClient(), serverName);
+		if (guild != null)
+			return guild.getLongID();
+		return 0;
 	}
 
 }

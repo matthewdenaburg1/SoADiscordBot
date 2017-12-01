@@ -32,6 +32,7 @@ public class SoaHelpEvent extends AbstractSoaMsgRcvEvent {
 		sb.append(".info - Display's bot info.\n");
 		sb.append(".music - Use .music help for music commands.\n");
 		sb.append(".trivia - Use .trivia help for the trivia commands.\n");
+		sb.append(".user - Use .user help for the user tracking commands.\n");
 		sb.append("```");
 
 		SoaClientHelper.sendMsgToChannel(getEvent().getMessage().getChannel(), sb.toString());

@@ -306,5 +306,23 @@ public class SoaClientHelper {
 		}
 		return sb.toString();
 	}
+	
+	/**
+	 * Finds a guild with the provided name
+	 * 
+	 * @param client Client to search in
+	 * @param name Name of guild to search for
+	 * @return Guild object for that guild
+	 */
+	public static IGuild findGuildByName(IDiscordClient client, String name)
+	{
+		List<IGuild> guilds = client.getGuilds();
+		for(IGuild guild : guilds)
+		{
+			if(guild.getName().equals(name))
+				return guild;
+		}
+		return null;
+	}
 
 }

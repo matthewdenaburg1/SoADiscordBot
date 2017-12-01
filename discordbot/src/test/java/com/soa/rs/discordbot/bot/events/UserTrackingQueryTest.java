@@ -94,6 +94,7 @@ public class UserTrackingQueryTest {
 		RankList list = new RankList();
 		list.getRole().add("TestRole");
 		DiscordCfgFactory.getConfig().getUserTrackingEvent().setCanUpdateQuery(list);
+		DiscordCfgFactory.getConfig().setDefaultGuildId(1234567890);
 
 		SoaLogging.initializeLogging();
 	}
@@ -465,6 +466,85 @@ public class UserTrackingQueryTest {
 		channel.setGuild(guild);
 
 		MockMessage message = CreateD4JObjects.createMockMessage(".user search User");
+		message.setChannel(channel);
+		message.setGuild(guild);
+		message.setClient(client);
+
+		MockUser user = CreateD4JObjects.createMockUser("user", "1234", 213456789, StatusType.ONLINE);
+		user.setDisplayName("User");
+		guild.addUser(user);
+
+		MockUser user2 = CreateD4JObjects.createMockUser("user2", "5678", 312456789, StatusType.ONLINE);
+		user.setDisplayName("User2");
+		guild.addUser(user2);
+
+		MockMsgRcvEvent event = new MockMsgRcvEvent(message);
+		event.setClient(client);
+
+		UserTrackingQuery query = new UserTrackingQuery(event);
+		query.setArgs(new String[] { "user", "search" });
+
+		query.executeEvent();
+
+		// Sleep is needed due to the requestbuffer not updating the boolean until after
+		// it thinks it sent the message
+		Thread.sleep(500);
+		Assert.assertTrue(channel.wasMessageSent());
+	}
+
+	@Test
+	public void testQuerySearchInvalidServer() throws InterruptedException {
+		MockDiscordClient client = CreateD4JObjects.createMockClient();
+
+		MockChannel channel = CreateD4JObjects.createMockChannel(13579);
+		MockGuild guild = CreateD4JObjects.createMockGuild("Test Guild", 1234567890);
+		guild.setClient(client);
+		client.addGuild(guild);
+
+		channel.setClient(client);
+		channel.setGuild(guild);
+
+		MockMessage message = CreateD4JObjects.createMockMessage(".user search User -server D4J");
+		message.setChannel(channel);
+		message.setGuild(guild);
+		message.setClient(client);
+
+		MockUser user = CreateD4JObjects.createMockUser("user", "1234", 213456789, StatusType.ONLINE);
+		user.setDisplayName("User");
+		guild.addUser(user);
+
+		MockUser user2 = CreateD4JObjects.createMockUser("user2", "5678", 312456789, StatusType.ONLINE);
+		user.setDisplayName("User2");
+		guild.addUser(user2);
+
+		MockMsgRcvEvent event = new MockMsgRcvEvent(message);
+		event.setClient(client);
+
+		UserTrackingQuery query = new UserTrackingQuery(event);
+		query.setArgs(new String[] { "user", "search" });
+
+		query.executeEvent();
+
+		// Sleep is needed due to the requestbuffer not updating the boolean until after
+		// it thinks it sent the message
+		Thread.sleep(500);
+		Assert.assertTrue(channel.wasMessageSent());
+		Assert.assertEquals("We didn't recognize the server that was entered", channel.getMessage());
+	}
+
+	@Test
+	public void testQuerySearchValidServer() throws InterruptedException {
+		MockDiscordClient client = CreateD4JObjects.createMockClient();
+
+		MockChannel channel = CreateD4JObjects.createMockChannel(13579);
+		MockGuild guild = CreateD4JObjects.createMockGuild("Test Guild", 1234567890);
+		guild.setClient(client);
+		client.addGuild(guild);
+
+		channel.setClient(client);
+		channel.setGuild(guild);
+
+		MockMessage message = CreateD4JObjects.createMockMessage(".user search User -server Test Guild");
 		message.setChannel(channel);
 		message.setGuild(guild);
 		message.setClient(client);
