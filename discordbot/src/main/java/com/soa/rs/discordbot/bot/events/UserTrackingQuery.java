@@ -234,12 +234,16 @@ public class UserTrackingQuery extends AbstractSoaMsgRcvEvent {
 		}
 	}
 
+	/**
+	 * Displays the help menu
+	 */
 	public void sendHelp() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("```Help: User Tracking\n");
 		sb.append(
 				".user search <searchphrase> [-server <servername>] - Searches and displays information about the searched user.  Optionally, the server name of the server to be searched for can be provided.  If not provided, the configured default server is used.\n");
-		sb.append(".user setKnownName <name> or .user setKnownUser <name> - Adds a recognizable name to the user.\n");
+		sb.append(
+				".user setKnownName (or .user setKnownUser) -name <name> -search <search> - Adds t recognizable name <name> to the user identified in <search>.  Search must match a user's name exactly.\n");
 		sb.append(".user sendfile - Sends a copy of the tracking XML file to the user.\n");
 		sb.append("\n");
 		sb.append(

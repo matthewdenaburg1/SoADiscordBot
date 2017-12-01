@@ -428,7 +428,7 @@ public class UserTrackingUpdater {
 				CurrentUser user = iter.next();
 				if (mustEqual) {
 					// For settingKnownName
-					if (user.getUserName().equals(search)) {
+					if (user.getUserName().toLowerCase().equals(search.toLowerCase())) {
 						searchedUsers.put(user, savedGuild.getGuildId());
 					} else {
 						Iterator<String> displayNamesIter = user.getDisplayNames().getDisplayName().iterator();
@@ -441,7 +441,7 @@ public class UserTrackingUpdater {
 					}
 				} else {
 					// For search
-					if (user.getUserName().contains(search)
+					if (user.getUserName().toLowerCase().contains(search.toLowerCase())
 							|| (user.getKnownName() != null && user.getKnownName().contains(search))) {
 						searchedUsers.put(user, savedGuild.getGuildId());
 					} else {
