@@ -34,6 +34,7 @@ import com.soa.rs.discordbot.jaxb.LeftUser;
 import com.soa.rs.discordbot.jaxb.LeftUsers;
 import com.soa.rs.discordbot.jaxb.RankList;
 import com.soa.rs.discordbot.jaxb.TrackedInformation;
+import com.soa.rs.discordbot.jaxb.User;
 import com.soa.rs.discordbot.jaxb.UserTrackingEvent;
 import com.soa.rs.discordbot.util.SoaLogging;
 
@@ -98,12 +99,12 @@ public class UserTrackingUpdaterTest {
 
 	@Test
 	public void testSearch() {
-		Map<CurrentUser, Long> results = UserTrackingUpdater.getInstance().searchUsers("User", false);
-		Iterator<CurrentUser> mapIter = results.keySet().iterator();
+		Map<User, Long> results = UserTrackingUpdater.getInstance().searchUsers("User", false);
+		Iterator<User> mapIter = results.keySet().iterator();
 		boolean user = false;
 		boolean user2 = false;
 		while (mapIter.hasNext()) {
-			CurrentUser curUser = mapIter.next();
+			User curUser = mapIter.next();
 			if (curUser.getDisplayNames().getDisplayName().contains("User")) {
 				user = true;
 			} else if (curUser.getDisplayNames().getDisplayName().contains("User2")) {
@@ -117,12 +118,12 @@ public class UserTrackingUpdaterTest {
 
 	@Test
 	public void testSearchSpecificUser() {
-		Map<CurrentUser, Long> results = UserTrackingUpdater.getInstance().searchUsers("@user#1234", false);
-		Iterator<CurrentUser> mapIter = results.keySet().iterator();
+		Map<User, Long> results = UserTrackingUpdater.getInstance().searchUsers("@user#1234", false);
+		Iterator<User> mapIter = results.keySet().iterator();
 		boolean user = false;
 		boolean user2 = false;
 		while (mapIter.hasNext()) {
-			CurrentUser curUser = mapIter.next();
+			User curUser = mapIter.next();
 			if (curUser.getDisplayNames().getDisplayName().contains("User")) {
 				user = true;
 			} else if (curUser.getDisplayNames().getDisplayName().contains("User2")) {
@@ -136,12 +137,12 @@ public class UserTrackingUpdaterTest {
 
 	@Test
 	public void testSearchMustMatch() {
-		Map<CurrentUser, Long> results = UserTrackingUpdater.getInstance().searchUsers("User", true);
-		Iterator<CurrentUser> mapIter = results.keySet().iterator();
+		Map<User, Long> results = UserTrackingUpdater.getInstance().searchUsers("User", true);
+		Iterator<User> mapIter = results.keySet().iterator();
 		boolean user = false;
 		boolean user2 = false;
 		while (mapIter.hasNext()) {
-			CurrentUser curUser = mapIter.next();
+			User curUser = mapIter.next();
 			if (curUser.getDisplayNames().getDisplayName().contains("User")) {
 				user = true;
 			} else if (curUser.getDisplayNames().getDisplayName().contains("User2")) {
@@ -273,6 +274,42 @@ public class UserTrackingUpdaterTest {
 		Assert.assertEquals(cal.get(Calendar.YEAR),
 				newinfo.getGuild().get(0).getGuildUsers().getUser().get(0).getLastOnline().getYear());
 		Assert.assertEquals(1970, newinfo.getGuild().get(0).getGuildUsers().getUser().get(1).getLastOnline().getYear());
+	}
+
+	@Test
+	public void testMaxRecentActionsRecorded() {
+		UserTrackingUpdater.getInstance().setInformation(new TrackedInformation());
+
+		MockDiscordClient client = CreateD4JObjects.createMockClient();
+
+		MockGuild guild = CreateD4JObjects.createMockGuild("Bot_Testing", 12345);
+
+		MockUser muser1 = CreateD4JObjects.createMockUser("Test user 1", "1234", 678910, StatusType.ONLINE);
+		MockUser muser2 = CreateD4JObjects.createMockUser("Test user 2", "5678", 111213, StatusType.OFFLINE);
+
+		guild.addUser(muser1);
+		guild.addUser(muser2);
+
+		client.addGuild(guild);
+
+		UserTrackingUpdater.getInstance().setClient(client);
+		UserTrackingUpdater.getInstance().populateInformation();
+
+		for (int i = 0; i < 20; i++) {
+			muser1.setDisplayName("Test user 1 " + i);
+			UserTrackingUpdater.getInstance().populateInformation();
+		}
+
+		TrackedInformation newinfo = null;
+
+		try {
+			InputStream stream = UserTrackingUpdater.getInstance().writeInfoToStream();
+			newinfo = unmarshallData(stream);
+		} catch (Exception e) {
+			Assert.fail();
+		}
+
+		Assert.assertEquals(15, newinfo.getGuild().get(0).getRecentActions().getRecentAction().size());
 	}
 
 	/*

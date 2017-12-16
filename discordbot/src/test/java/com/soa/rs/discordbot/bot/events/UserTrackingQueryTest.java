@@ -571,6 +571,74 @@ public class UserTrackingQueryTest {
 		Assert.assertTrue(channel.wasMessageSent());
 	}
 
+	@Test
+	public void testRecentActions() throws InterruptedException {
+
+		UserTrackingUpdater.getInstance().setInformation(new TrackedInformation());
+
+		MockDiscordClient client = CreateD4JObjects.createMockClient();
+
+		MockGuild guild = CreateD4JObjects.createMockGuild("Bot_Testing", 1234567890);
+		MockChannel channel = CreateD4JObjects.createMockChannel(13579);
+		channel.setClient(client);
+		channel.setGuild(guild);
+
+		MockUser muser1 = CreateD4JObjects.createMockUser("Test user 1", "1234", 678910, StatusType.ONLINE);
+		MockUser muser2 = CreateD4JObjects.createMockUser("Test user 2", "5678", 111213, StatusType.ONLINE);
+
+		guild.addUser(muser1);
+		guild.addUser(muser2);
+
+		client.addGuild(guild);
+
+		UserTrackingUpdater.getInstance().setClient(client);
+		UserTrackingUpdater.getInstance().populateInformation();
+
+		guild.removeUser(muser2);
+
+		UserTrackingUpdater.getInstance().setClient(client);
+		UserTrackingUpdater.getInstance().populateInformation();
+
+		muser1.setDiscriminator("9876");
+
+		UserTrackingUpdater.getInstance().setClient(client);
+		UserTrackingUpdater.getInstance().populateInformation();
+
+		muser1.setDisplayName("Mah name!");
+
+		UserTrackingUpdater.getInstance().setClient(client);
+		UserTrackingUpdater.getInstance().populateInformation();
+
+		MockMessage message = CreateD4JObjects.createMockMessage(".user getRecentActions");
+		message.setChannel(channel);
+		message.setGuild(guild);
+		message.setClient(client);
+
+		MockUser author = CreateD4JObjects.createMockUser("Author", "7890", 6497, StatusType.ONLINE);
+		MockRole role = CreateD4JObjects.createMockRole(7031, "TestRole");
+		author.addRole(role);
+		message.setAuthor(author);
+		guild.addUser(author);
+		guild.addRole(role);
+
+		MockMsgRcvEvent event = new MockMsgRcvEvent(message);
+		event.setClient(client);
+
+		UserTrackingQuery query = new UserTrackingQuery(event);
+		query.setArgs(new String[] { "user", "getRecentActions" });
+
+		query.executeEvent();
+		Thread.sleep(500);
+
+		Assert.assertTrue(channel.getMessage().contains("@Test user 1#1234 has joined the server."));
+		Assert.assertTrue(channel.getMessage().contains("@Test user 2#5678 has left the server."));
+		Assert.assertTrue(
+				channel.getMessage().contains("@Test user 1#1234 has changed their user handle to @Test user 1#9876."));
+		Assert.assertTrue(channel.getMessage()
+				.contains("@Test user 1#9876 has changed their display name from Test user 1 to Mah name!."));
+
+	}
+
 	/*
 	 * Non-test support methods below
 	 */

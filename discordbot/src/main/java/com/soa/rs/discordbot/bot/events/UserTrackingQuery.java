@@ -8,7 +8,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
+import com.soa.rs.discordbot.jaxb.Actions;
 import com.soa.rs.discordbot.jaxb.CurrentUser;
+import com.soa.rs.discordbot.jaxb.LeftUser;
+import com.soa.rs.discordbot.jaxb.RecentAction;
+import com.soa.rs.discordbot.jaxb.RecentActions;
+import com.soa.rs.discordbot.jaxb.User;
 import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 
@@ -62,6 +67,8 @@ public class UserTrackingQuery extends AbstractSoaMsgRcvEvent {
 				searchUsers();
 			} else if (args[1].equalsIgnoreCase("sendfile")) {
 				sendTrackingFileToUser();
+			} else if (args[1].equalsIgnoreCase("getrecentactions")) {
+				postRecentActions();
 			} else {
 				sendHelp();
 			}
@@ -77,7 +84,7 @@ public class UserTrackingQuery extends AbstractSoaMsgRcvEvent {
 	private void searchUsers() {
 		String searchTerm = null;
 		long id = DiscordCfgFactory.getConfig().getDefaultGuildId();
-		Map<CurrentUser, Long> resultSet = null;
+		Map<User, Long> resultSet = null;
 		StringBuilder sb = new StringBuilder();
 		SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
 
@@ -95,48 +102,64 @@ public class UserTrackingQuery extends AbstractSoaMsgRcvEvent {
 		}
 		SoaLogging.getLogger().info("Search term: " + searchTerm);
 		resultSet = UserTrackingUpdater.getInstance().searchUsers(searchTerm, false);
+		resultSet.putAll(UserTrackingUpdater.getInstance().searchLeftUsers(searchTerm));
 
 		if (resultSet.size() == 0) {
 			if (!getEvent().getMessage().getMentions().isEmpty())
 				searchTerm = getMentionedUser();
 			if (searchTerm != null) {
 				resultSet = UserTrackingUpdater.getInstance().searchUsers(searchTerm, false);
+				resultSet.putAll(UserTrackingUpdater.getInstance().searchLeftUsers(searchTerm));
 			}
 		}
 
 		if (resultSet.size() > 0) {
-			Iterator<Entry<CurrentUser, Long>> mapIter = resultSet.entrySet().iterator();
+			Iterator<Entry<User, Long>> mapIter = resultSet.entrySet().iterator();
 			while (mapIter.hasNext()) {
-				Map.Entry<CurrentUser, Long> entry = mapIter.next();
+				Map.Entry<User, Long> entry = mapIter.next();
 				if (entry.getValue().longValue() == id) {
 					EmbedBuilder builder = new EmbedBuilder();
 
-					CurrentUser user = entry.getKey();
+					User user = entry.getKey();
 
-					builder.withTitle(getEvent().getClient().getUserByID(user.getUserId())
-							.getDisplayName(getEvent().getClient().getGuildByID(entry.getValue().longValue())));
-					builder.withDesc(SoaClientHelper.getDiscordUserNameForUser(
-							getEvent().getClient().getUserByID(user.getUserId())) + " in  server: "
+					if (user instanceof CurrentUser) {
+						builder.withTitle(getEvent().getClient().getUserByID(user.getUserId())
+								.getDisplayName(getEvent().getClient().getGuildByID(entry.getValue().longValue())));
+					} else {
+						builder.withTitle(user.getUserName());
+					}
+					builder.withDesc(user.getUserName() + " in  server: "
 							+ getEvent().getClient().getGuildByID(entry.getValue().longValue()).getName());
 					if (user.getKnownName() != null) {
 						builder.appendField("Known Name", user.getKnownName(), false);
 					}
 					sb.setLength(0);
 					Iterator<String> iter = user.getDisplayNames().getDisplayName().iterator();
+					int nameCount = 0;
 					while (iter.hasNext()) {
 						String name = iter.next();
 						sb.append(name);
+						nameCount++;
+						if (sb.length() > 975) {
+							sb.append(", and " + (user.getDisplayNames().getDisplayName().size() - nameCount)
+									+ " additional names.");
+							break;
+						}
 						if (iter.hasNext()) {
 							sb.append(", ");
 						}
 					}
 					builder.appendField("All display names", sb.toString(), false);
 
-					builder.appendField("Joined server date",
-							sdf.format(user.getJoined().toGregorianCalendar().getTime()), true);
-					builder.appendField("Last seen date",
-							sdf.format(user.getLastOnline().toGregorianCalendar().getTime()), true);
-
+					if (user instanceof CurrentUser) {
+						builder.appendField("Joined server date",
+								sdf.format(((CurrentUser) user).getJoined().toGregorianCalendar().getTime()), true);
+						builder.appendField("Last seen date",
+								sdf.format(((CurrentUser) user).getLastOnline().toGregorianCalendar().getTime()), true);
+					} else if (user instanceof LeftUser) {
+						builder.appendField("Left server date",
+								sdf.format(((LeftUser) user).getLeft().toGregorianCalendar().getTime()), false);
+					}
 					// Send Embed
 
 					SoaClientHelper.sendEmbedToChannel(getEvent().getChannel(), builder);
@@ -235,6 +258,64 @@ public class UserTrackingQuery extends AbstractSoaMsgRcvEvent {
 	}
 
 	/**
+	 * Displays Recent Actions for a server
+	 */
+	public void postRecentActions() {
+		if (SoaClientHelper.isRank(getEvent().getMessage(),
+				getEvent().getClient().getGuildByID(DiscordCfgFactory.getConfig().getDefaultGuildId()),
+				DiscordCfgFactory.getConfig().getUserTrackingEvent().getCanUpdateQuery().getRole())) {
+			long guildID = DiscordCfgFactory.getConfig().getDefaultGuildId();
+			if (getEvent().getMessage().getContent().contains("-server")) {
+				guildID = getServerId(getEvent().getMessage().getContent());
+			}
+			RecentActions actions = UserTrackingUpdater.getInstance().getRecentActionsForGuild(guildID);
+			StringBuilder sb = new StringBuilder();
+			sb.append("Recent Actions for guild: " + getEvent().getClient().getGuildByID(guildID).getName() + "\n");
+			if (actions.getRecentAction().size() == 0) {
+				sb.append("No actions recorded for this guild");
+			} else {
+				for (RecentAction action : actions.getRecentAction()) {
+					sb.append(action.getUser() + getStringForAction(action.getAction()));
+					if (action.getAction() == Actions.CHANGED_DISPLAY_NAME) {
+						sb.append(action.getOriginalValue() + " to " + action.getChangedValue() + ".\n");
+					} else if (action.getAction() == Actions.CHANGED_USER_HANDLE) {
+						sb.append(action.getChangedValue() + ".\n");
+					}
+				}
+			}
+			SoaClientHelper.sendMsgToChannel(getEvent().getChannel(), sb.toString());
+		}
+	}
+
+	/**
+	 * Gets an appropriate string for the action
+	 * 
+	 * @param action
+	 *            Action for which to return a string
+	 * @return String representation of the action.
+	 */
+	public String getStringForAction(Actions action) {
+		String value = null;
+		switch (action) {
+		case JOINED_SERVER:
+			value = " has joined the server.\n";
+			break;
+		case LEFT_SERVER:
+			value = " has left the server.\n";
+			break;
+		case CHANGED_DISPLAY_NAME:
+			value = " has changed their display name from ";
+			break;
+		case CHANGED_USER_HANDLE:
+			value = " has changed their user handle to ";
+			break;
+		default:
+			break;
+		}
+		return value;
+	}
+
+	/**
 	 * Displays the help menu
 	 */
 	public void sendHelp() {
@@ -243,11 +324,13 @@ public class UserTrackingQuery extends AbstractSoaMsgRcvEvent {
 		sb.append(
 				".user search <searchphrase> [-server <servername>] - Searches and displays information about the searched user.  Optionally, the server name of the server to be searched for can be provided.  If not provided, the configured default server is used.\n");
 		sb.append(
-				".user setKnownName (or .user setKnownUser) -name <name> -search <search> - Adds t recognizable name <name> to the user identified in <search>.  Search must match a user's name exactly.\n");
+				".user setKnownName (or .user setKnownUser) -name <name> -search <search> - Adds a recognizable name <name> to the user identified in <search>.  Search must match a user's name exactly.\n");
 		sb.append(".user sendfile - Sends a copy of the tracking XML file to the user.\n");
+		sb.append(
+				".user getRecentActions [-server <servername>] - Lists out the last 15 tracking events for the guild.\n");
 		sb.append("\n");
 		sb.append(
-				"Note: sendFile and setKnownName may only be run by the following users: "
+				"Note: sendFile, setKnownName, and getRecentActions may only be run by the following users: "
 						+ SoaClientHelper.translateRoleList(
 								DiscordCfgFactory.getConfig().getUserTrackingEvent().getCanUpdateQuery().getRole())
 						+ "\n");

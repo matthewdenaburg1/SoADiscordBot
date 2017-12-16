@@ -20,14 +20,19 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.xml.sax.SAXException;
 
 import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
+import com.soa.rs.discordbot.jaxb.Actions;
 import com.soa.rs.discordbot.jaxb.CurrentUser;
 import com.soa.rs.discordbot.jaxb.DisplayNames;
 import com.soa.rs.discordbot.jaxb.Guild;
 import com.soa.rs.discordbot.jaxb.GuildUsers;
 import com.soa.rs.discordbot.jaxb.LeftUser;
 import com.soa.rs.discordbot.jaxb.LeftUsers;
+import com.soa.rs.discordbot.jaxb.RecentAction;
+import com.soa.rs.discordbot.jaxb.RecentActions;
 import com.soa.rs.discordbot.jaxb.TrackedInformation;
+import com.soa.rs.discordbot.jaxb.User;
 import com.soa.rs.discordbot.util.DateAnalyzer;
+import com.soa.rs.discordbot.util.SoaClientHelper;
 import com.soa.rs.discordbot.util.SoaLogging;
 import com.soa.rs.discordbot.util.XmlReader;
 import com.soa.rs.discordbot.util.XmlWriter;
@@ -172,6 +177,7 @@ public class UserTrackingUpdater {
 		newGuild.setGuildName(guild.getName());
 		newGuild.setGuildUsers(new GuildUsers());
 		newGuild.setLeftUsers(new LeftUsers());
+		newGuild.setRecentActions(new RecentActions());
 		newGuild = updateGuildListing(newGuild, guild);
 		this.information.getGuild().add(newGuild);
 	}
@@ -187,6 +193,10 @@ public class UserTrackingUpdater {
 	 * @return The updated guild object.
 	 */
 	private Guild updateGuildListing(Guild ourGuild, IGuild guild) {
+		if (ourGuild.getRecentActions() == null) {
+			ourGuild.setRecentActions(new RecentActions());
+		}
+
 		List<IUser> users = guild.getUsers();
 		for (IUser user : users) {
 			int position = getUserPosition(ourGuild, user);
@@ -194,8 +204,16 @@ public class UserTrackingUpdater {
 				try {
 					SoaLogging.getLogger().trace("User " + user.getName() + " in list, updating details.");
 					CurrentUser curUser = ourGuild.getGuildUsers().getUser().get(position);
-					curUser.setUserName("@" + user.getName() + "#" + user.getDiscriminator());
+					if (!SoaClientHelper.getDiscordUserNameForUser(user).equals(curUser.getUserName())) {
+						addRecentAction(ourGuild.getRecentActions(), curUser.getUserName(), Actions.CHANGED_USER_HANDLE,
+								SoaClientHelper.getDiscordUserNameForUser(user));
+						curUser.setUserName(SoaClientHelper.getDiscordUserNameForUser(user));
+
+					}
 					if (isNewDisplayName(curUser.getDisplayNames(), user.getDisplayName(guild))) {
+						addRecentAction(ourGuild.getRecentActions(), curUser.getUserName(),
+								Actions.CHANGED_DISPLAY_NAME, curUser.getDisplayNames().getDisplayName().get(0),
+								user.getDisplayName(guild));
 						curUser.getDisplayNames().getDisplayName().add(0, user.getDisplayName(guild));
 					}
 					IPresence presence = user.getPresence();
@@ -209,10 +227,12 @@ public class UserTrackingUpdater {
 			} else {
 				try {
 					SoaLogging.getLogger().trace("User " + user.getName() + " not in list, adding.");
+					addRecentAction(ourGuild.getRecentActions(), SoaClientHelper.getDiscordUserNameForUser(user),
+							Actions.JOINED_SERVER);
 					CurrentUser curUser = new CurrentUser();
 
 					curUser.setUserId(user.getLongID());
-					curUser.setUserName("@" + user.getName() + "#" + user.getDiscriminator());
+					curUser.setUserName(SoaClientHelper.getDiscordUserNameForUser(user));
 					curUser.setDisplayNames(new DisplayNames());
 					curUser.getDisplayNames().getDisplayName().add(user.getDisplayName(guild));
 					curUser.setJoined(convertDateToCal(guild.getJoinTimeForUser(user)));
@@ -262,6 +282,7 @@ public class UserTrackingUpdater {
 			if (hasLeft) {
 				try {
 					SoaLogging.getLogger().trace("User " + user.getUserName() + " has left, adding as left user.");
+					addRecentAction(ourGuild.getRecentActions(), user.getUserName(), Actions.LEFT_SERVER);
 					LeftUser leftUser = new LeftUser();
 					leftUser.setUserId(user.getUserId());
 					leftUser.setUserName(user.getUserName());
@@ -336,6 +357,32 @@ public class UserTrackingUpdater {
 		return true;
 	}
 
+	private void addRecentAction(RecentActions actions, String user, Actions action) {
+		addRecentAction(actions, user, action, null, null);
+	}
+
+	private void addRecentAction(RecentActions actions, String user, Actions action, String changedValue) {
+		addRecentAction(actions, user, action, null, changedValue);
+	}
+
+	private void addRecentAction(RecentActions actions, String user, Actions action, String originalValue,
+			String changedValue) {
+		RecentAction recentAction = new RecentAction();
+		recentAction.setUser(user);
+		recentAction.setAction(action);
+		if (originalValue != null) {
+			recentAction.setOriginalValue(originalValue);
+		}
+		if (changedValue != null) {
+			recentAction.setChangedValue(changedValue);
+		}
+
+		if (actions.getRecentAction().size() >= 15) {
+			actions.getRecentAction().remove(0);
+		}
+		actions.getRecentAction().add(recentAction);
+	}
+
 	/**
 	 * Converts a <tt>LocalDateTime</tt> into a <tt>XMLGregorianCalendar</tt>.
 	 * 
@@ -391,12 +438,12 @@ public class UserTrackingUpdater {
 	public synchronized boolean addKnownNameToUser(String search, String name) {
 		boolean updated = false;
 
-		Map<CurrentUser, Long> searchedUsers = searchUsers(search, true);
+		Map<User, Long> searchedUsers = searchUsers(search, true);
 
 		if (searchedUsers.size() > 0) {
-			Iterator<Entry<CurrentUser, Long>> iter = searchedUsers.entrySet().iterator();
+			Iterator<Entry<User, Long>> iter = searchedUsers.entrySet().iterator();
 			while (iter.hasNext()) {
-				Map.Entry<CurrentUser, Long> entry = iter.next();
+				Entry<User, Long> entry = iter.next();
 				entry.getKey().setKnownName(name);
 			}
 			updated = true;
@@ -417,8 +464,8 @@ public class UserTrackingUpdater {
 	 * @return A map containing entries with the user object and the guild ID that
 	 *         they were found in.
 	 */
-	public Map<CurrentUser, Long> searchUsers(String search, boolean mustEqual) {
-		Map<CurrentUser, Long> searchedUsers = new HashMap<CurrentUser, Long>();
+	public Map<User, Long> searchUsers(String search, boolean mustEqual) {
+		Map<User, Long> searchedUsers = new HashMap<User, Long>();
 
 		for (Guild savedGuild : this.information.getGuild()) {
 
@@ -434,7 +481,7 @@ public class UserTrackingUpdater {
 						Iterator<String> displayNamesIter = user.getDisplayNames().getDisplayName().iterator();
 						while (displayNamesIter.hasNext()) {
 							String dispName = displayNamesIter.next();
-							if (dispName.equals(search)) {
+							if (dispName.toLowerCase().equals(search.toLowerCase())) {
 								searchedUsers.put(user, savedGuild.getGuildId());
 							}
 						}
@@ -448,7 +495,7 @@ public class UserTrackingUpdater {
 						Iterator<String> displayNamesIter = user.getDisplayNames().getDisplayName().iterator();
 						while (displayNamesIter.hasNext()) {
 							String dispName = displayNamesIter.next();
-							if (dispName.contains(search)) {
+							if (dispName.toLowerCase().contains(search.toLowerCase())) {
 								searchedUsers.put(user, savedGuild.getGuildId());
 							}
 						}
@@ -459,6 +506,58 @@ public class UserTrackingUpdater {
 		}
 
 		return searchedUsers;
+	}
+
+	/**
+	 * Searches for a user who has left the guild within tracked information.
+	 * 
+	 * @param search
+	 *            The string to search for
+	 * 
+	 * @return A map containing entries with the user object and the guild ID that
+	 *         they were found in.
+	 */
+	public Map<LeftUser, Long> searchLeftUsers(String search) {
+		Map<LeftUser, Long> searchedUsers = new HashMap<LeftUser, Long>();
+
+		for (Guild savedGuild : this.information.getGuild()) {
+
+			List<LeftUser> leftUsers = savedGuild.getLeftUsers().getUser();
+			Iterator<LeftUser> iter = leftUsers.iterator();
+			while (iter.hasNext()) {
+				LeftUser user = iter.next();
+				if (user.getUserName().toLowerCase().contains(search.toLowerCase())) {
+					searchedUsers.put(user, savedGuild.getGuildId());
+				} else {
+					Iterator<String> displayNamesIter = user.getDisplayNames().getDisplayName().iterator();
+					while (displayNamesIter.hasNext()) {
+						String dispName = displayNamesIter.next();
+						if (dispName.toLowerCase().contains(search.toLowerCase())) {
+							searchedUsers.put(user, savedGuild.getGuildId());
+						}
+					}
+				}
+			}
+		}
+
+		return searchedUsers;
+	}
+
+	/**
+	 * Gets the recent actions for the specified guild
+	 * 
+	 * @param guildID
+	 *            Long ID identifying the guild
+	 * @return Recent Actions for the guild
+	 */
+	public RecentActions getRecentActionsForGuild(long guildID) {
+		for (Guild guild : this.information.getGuild()) {
+			if (guild.getGuildId() == guildID) {
+				return guild.getRecentActions();
+			}
+		}
+		// Guild ID isn't for a tracked guild, return null
+		return null;
 	}
 
 	/**
