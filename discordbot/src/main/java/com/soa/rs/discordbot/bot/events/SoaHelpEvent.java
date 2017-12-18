@@ -27,7 +27,7 @@ public class SoaHelpEvent extends AbstractSoaMsgRcvEvent {
 	@Override
 	public void executeEvent() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("```Help: SoA Commands\n");
+		sb.append("```Help: " + DiscordCfgFactory.getInstance().getBotname() + " Commands\n");
 		sb.append(".events - Displays an up-to-date listing of today's events.\n");
 		sb.append(".info - Display's bot info.\n");
 		sb.append(".music - Use .music help for music commands.\n");
