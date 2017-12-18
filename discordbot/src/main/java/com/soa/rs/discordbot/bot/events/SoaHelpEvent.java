@@ -1,6 +1,7 @@
 package com.soa.rs.discordbot.bot.events;
 
 import com.soa.rs.discordbot.util.SoaClientHelper;
+import com.soa.rs.discordbot.cfg.DiscordCfgFactory;
 
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 
